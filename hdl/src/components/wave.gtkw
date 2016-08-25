@@ -1,0 +1,35 @@
+[*]
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Thu Aug 25 19:56:34 2016
+[*]
+[dumpfile] "/home/bjohan/git_wd/fpgadds/hdl/src/components/tb.vcd"
+[dumpfile_mtime] "Thu Aug 25 19:55:48 2016"
+[dumpfile_size] 19315
+[savefile] "/home/bjohan/git_wd/fpgadds/hdl/src/components/wave.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 534 118
+*-31.624733 1812000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 210
+[signals_width] 214
+[sst_expanded] 1
+[sst_vpaned_height] 151
+@10024
+clk
+@28
+led
+run
+reset
+@22
+i_phase_acc.phase_out[63:0]
+@28
+i_phase_acc.reset
+@22
+i_phase_acc.phase_accumulator[63:0]
+i_phase_acc.phase_modulation[63:0]
+i_phase_acc.phase_out[63:0]
+i_phase_acc.phase_step[63:0]
+@29
+i_phase_acc.reset
+[pattern_trace] 1
+[pattern_trace] 0
