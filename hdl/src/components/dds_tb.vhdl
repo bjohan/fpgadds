@@ -22,14 +22,24 @@ component phase_accumulator
 end component;
 
 
+component lookup_table
+    	port ( 
+		clk : in  STD_LOGIC;
+	
+		x 	: in std_logic_vector(8 - 1 downto 0);
+		y	: out std_logic_vector(12 downto 0)
+           	);
+end component;
 
 signal clk  : std_logic:= '0';
 signal led : std_logic;
 signal run : std_logic:='1';
 signal reset : std_logic:='1';
 
+signal y : std_logic_vector(12 downto 0);
 signal step : std_logic_vector(63 downto 0);
 signal phase_out : std_logic_vector(63 downto 0);
+signal xfolded : std_logic_vector(7 downto 0);
 begin
 
 clk <= not clk after 10 ns when run = '1' else '0';
@@ -45,8 +55,13 @@ i_phase_acc : phase_accumulator
 		phase_step => step,
 		phase_out => phase_out
 	);
---i_top : phase_accumulator
---port map(clk => clk, led1 => led);
+i_lut : lookup_table
+    	port map( 
+		clk => clk,
+		x => phase_out(63 downto 56),
+		y => y
+           	);
+
 
 end Behavioral;
 

@@ -38,15 +38,19 @@ end Behavioral;
 
 def gen_lut_table(bitsX, bitsY, fn):
 	fh = open(fn, 'w');
-	ymax = 2**bitsY-1;
+	ymax = 2**(bitsY-1)-1;
 	xmax = 2**bitsX-1;
 	lut_string = '';
 	for i in range(xmax+1):
-		yval = math.sin(math.pi*0.5*float(i)/float(xmax))*ymax;
+		yval = math.sin(math.pi*2*float(i)/float(xmax+1))*ymax;
+		
+		if yval < 0:
+			print ymax, yval, bin(int(ymax)+int(yval))
+			yval = (2**bitsY-1)+yval+1
 		lut_string+=('\t\t\t\twhen "'+format(i, "0%db"%(bitsX))+'" => y <= "'+format(int(yval), "0%db"%(bitsY))+'";\n')
 	fh.write(file_start.format(bitsX, bitsY))
 	fh.write(lut_string)
 	fh.write(file_end)
 
 
-gen_lut_table(6, 12, file_name);
+gen_lut_table(8, 13, file_name);
