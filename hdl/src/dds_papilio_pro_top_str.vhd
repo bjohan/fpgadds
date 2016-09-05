@@ -19,7 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
+use ieee.numeric_std.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -35,10 +35,15 @@ entity dds_papilio_pro_top_str is
 end dds_papilio_pro_top_str;
 
 architecture Behavioral of dds_papilio_pro_top_str is
-
+signal counter : unsigned(31 downto 0);
 begin
-
-led1 <= '0';
+p_coount : process(clk)
+begin
+	if rising_edge(clk) then
+		counter <= counter + 1;
+	end if;
+end process;
+led1 <= counter(20);
 
 end Behavioral;
 

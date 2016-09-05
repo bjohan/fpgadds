@@ -1,9 +1,10 @@
 TARGET = dds_papilio_pro_top_str
 VLOGS = 
 VLOGS_ALL = $(VLOGS)
-VHDLS = dds_papilio_pro_top_str.vhd
+VHDLS = dds_papilio_pro_top_str.vhd sim/tb.vhd
 VHDLS_ALL = $(VHDLS)
 SRCS_ALL = $(VLOGS_ALL) $(VHDLS_ALL)
+TB = tb
 PART = xc6slx9-tqg144-3
 MAP_OPTS = -intstyle ise -p $(PART) -w -logic_opt off -ol high -t 1 -xt 0 -register_duplication off -r 4 -global_opt off -mt off -ir off -pr off -lc off -power off
 PAR_OPTS = -w -intstyle ise -ol high -mt off 
@@ -49,12 +50,33 @@ BITGEN_OPTS = \
 fpga_target: $(TARGET).bit
 	papilio-prog -f $(TARGET).bit
 
-$(TARGET).ngc: $(TARGET).xst $(SRCS_ALL) $(VHDLS_ALL)
+
+proj_struct: 
 	@mkdir -p xst/projnav.tmp
 	@echo work > $(TARGET).lso
+
+$(TARGET).prj: $(SRCS_ALL)
 	@rm -f $(TARGET).prj
 	@for i in $(VLOGS); do echo verilog work '"'$$i'"' >> $(TARGET).prj; done
 	@for i in $(VHDLS); do echo vhdl work '"'$$i'"' >> $(TARGET).prj; done
+	@for i in $(VLOGS); do echo verilog isim_temp '"'$$i'"' >> $(TARGET).prj; done
+	@for i in $(VHDLS); do echo vhdl isim_temp '"'$$i'"' >> $(TARGET).prj; done
+
+$(TB).prj: $(SRCS_ALL)
+	@rm -f $(TB).prj
+	@for i in $(VLOGS); do echo verilog work '"'$$i'"' >> $(TB).prj; done
+	@for i in $(VHDLS); do echo vhdl work '"'$$i'"' >> $(TB).prj; done
+
+$(TB).syr: proj_struct $(TARGET).prj $(TB).xst $(TB).prj
+	xst -intstyle ise -ifn $(TB).xst -ofn $(TB).syr
+
+$(TB).ngd: $(TB).syr
+	ngdbuild -intstyle ise -dd _ngo -nt timestamp -p $(PART) $(TB).ngc $(TB).ngd
+
+$(TARGET).exe: $(TB).ngd
+	fuse -intstyle ise -incremental -lib secureip -o $(TARGET).exe -prj $(TARGET).prj work.tb {}
+
+$(TARGET).ngc: $(TARGET).xst $(TARGET).prj proj_struct
 	xst -ifn $(TARGET).xst -ofn $(TARGET).syr
 
 $(TARGET).ngd: $(TARGET).ngc $(TARGET).ucf

@@ -22,7 +22,7 @@ component phase_accumulator
 end component;
 
 
-component lookup_table
+component lookup_table_interpolated
     	port ( 
 		clk : in  STD_LOGIC;
 	
@@ -45,7 +45,7 @@ begin
 clk <= not clk after 10 ns when run = '1' else '0';
 run <= '0' after 10 us;
 reset <= '0' after 100 ns;
-step <= x"0300000000000000";
+step <= x"0030000000000000";
 
 i_phase_acc : phase_accumulator
 	port map(
@@ -55,10 +55,11 @@ i_phase_acc : phase_accumulator
 		phase_step => step,
 		phase_out => phase_out
 	);
-i_lut : lookup_table
+
+i_lut : lookup_table_interpolated
     	port map( 
 		clk => clk,
-		x => phase_out(63 downto 56),
+		x => phase_out, --(63 downto 56),
 		y => y
            	);
 

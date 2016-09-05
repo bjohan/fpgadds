@@ -21,6 +21,10 @@
 #       [C14] P133         [B14] P50    P51 [A01] [2V5]
 #       [C15] P134         [B15] P47    P48 [A00] [GND]
 
+#net clk period = 20 ns;
+#net "clk" TNM_NET = clk;
+#timespec ts_clk = period "clk" 10 ns high 50%;
+
 ## Prohibit the automatic placement of pins that are connected to VCC or GND for configuration.
 CONFIG PROHIBIT=P144;
 CONFIG PROHIBIT=P69;
