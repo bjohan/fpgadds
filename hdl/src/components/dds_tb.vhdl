@@ -26,7 +26,7 @@ component lookup_table_interpolated
     	port ( 
 		clk : in  STD_LOGIC;
 	
-		x 	: in std_logic_vector(8 - 1 downto 0);
+		x 	: in std_logic_vector(63 downto 0);
 		y	: out std_logic_vector(12 downto 0)
            	);
 end component;
@@ -43,7 +43,7 @@ signal xfolded : std_logic_vector(7 downto 0);
 begin
 
 clk <= not clk after 10 ns when run = '1' else '0';
-run <= '0' after 10 us;
+run <= '0' after 30 us;
 reset <= '0' after 100 ns;
 step <= x"0030000000000000";
 

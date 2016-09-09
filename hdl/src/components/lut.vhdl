@@ -7,6 +7,7 @@ entity lookup_table is
 		clk : in  STD_LOGIC;
 	
 		x 	: in std_logic_vector(8 - 1 downto 0);
+		xout 	: out std_logic_vector(8 - 1 downto 0);
 		y	: out std_logic_vector(13 - 1 downto 0)
            	);
 end lookup_table;
@@ -16,7 +17,7 @@ begin
 	p_coount : process(clk)
 	begin
 		if rising_edge(clk) then
-
+			xout <= x;
 			case x is
 				when "00000000" => y <= "0000000000000";
 				when "00000001" => y <= "0000001100100";
