@@ -1,8 +1,8 @@
 from myhdl import *
 
-def rs232rx(rxdata, rxValid, rxd, clk, baudDiv=15):
+def rs232rx(rxdata, rxValid, rxd, clk, baudDiv):
     baudTick = Signal(False)
-    baudCnt = Signal(intbv(0))
+    baudCnt = Signal(intbv(min=0, max=2**24))
     currentBit = Signal(intbv(0, min=0, max=11));
     completeWord = Signal(intbv(0, min=0, max=1024))
 
@@ -10,7 +10,7 @@ def rs232rx(rxdata, rxValid, rxd, clk, baudDiv=15):
     def logic():
         if currentBit > 0:
             baudCnt.next = baudCnt +1;
-            if baudCnt == baudDiv:
+            if baudCnt == 2*baudDiv:
                 baudCnt.next = 0
 
                 baudTick.next = True
@@ -20,7 +20,7 @@ def rs232rx(rxdata, rxValid, rxd, clk, baudDiv=15):
         #Start bit detected, start the baud clock with half cycle delay
         if rxd == False and currentBit == 0:
             currentBit.next = 1;
-            baudCnt.next = int(baudDiv/2);
+            baudCnt.next = baudDiv;
 
         #Count the bits
         if baudTick and currentBit > 0:
@@ -37,7 +37,4 @@ def rs232rx(rxdata, rxValid, rxd, clk, baudDiv=15):
             rxValid.next = True
         else:
             rxValid.next = False
-    
-        
-
     return logic

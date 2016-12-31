@@ -1,9 +1,9 @@
 from myhdl import *
 
-def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv=15):
+def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv):
 
     baudTick = Signal(False)
-    baudCnt = Signal(intbv(0))
+    baudCnt = Signal(intbv(min=0, max=2**24))
     currentBit = Signal(intbv(0, min=0, max=11));
     completeWord = Signal(intbv(0, min=0, max=1024))
 
@@ -11,7 +11,7 @@ def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv=15):
     def logic():
         if currentBit > 0:
             baudCnt.next = baudCnt +1;
-            if baudCnt == baudDiv:
+            if baudCnt == 2*baudDiv:
                 baudCnt.next = 0
                 baudTick.next = True
             else:
