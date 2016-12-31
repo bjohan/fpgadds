@@ -1,23 +1,17 @@
 from myhdl import *
 
-def rs232tx(toTx, txValid, txReady, txd, clk):
+def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv=15):
 
-    #run = Signal(False)
     baudTick = Signal(False)
     baudCnt = Signal(intbv(0))
-    #toTx = Signal(intbv(min = 0, max=255))
-    #txReady = Signal(True)
     currentBit = Signal(intbv(0, min=0, max=11));
     completeWord = Signal(intbv(0, min=0, max=1024))
-    #txd = Signal(True);
-
-
 
     @always(clk.posedge)
     def logic():
         if currentBit > 0:
             baudCnt.next = baudCnt +1;
-            if baudCnt == 15:
+            if baudCnt == baudDiv:
                 baudCnt.next = 0
                 baudTick.next = True
             else:
@@ -35,9 +29,11 @@ def rs232tx(toTx, txValid, txReady, txd, clk):
             currentBit.next = currentBit + 1
         elif currentBit == 10 and baudTick:
             currentBit.next = 0
-            txReady.next = True;
+            txReady.next = True
+            txd.next = True
         elif currentBit == 0:
-            txReady.next = True;
+            txReady.next = True
+            txd.next = True
 
 
     return logic
