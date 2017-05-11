@@ -51,6 +51,15 @@ module roundedPlate(sx, sy, sz, r){
     }
 }
 
+module hollowCube(vo, wt){
+    difference(){
+        cube(vo);
+        translate(wt*0.5)
+        cube(vo-wt);
+        
+    }
+}
+
 module fanBody(){
     difference(){
         union(){
@@ -127,10 +136,16 @@ module duct(){
         rotate([0,90,0])
             cylinder(21, 4, 4);
     translate([-9/2, 0, 0])
-    %cube([30, 88, 30]);
+    hollowCube([30, 88, 30], [3,3,3]);
 }
 
-duct();
+module halfDuct(){
+    difference(){
+        duct();
+        translate([-10, -10, -1])
+            cube([100, 100, 10]);
+    }
+}
 
 module componentsAssembly(){
 regulators();
@@ -140,5 +155,5 @@ board();
 translate([21/2,88/2,30])
 fan();
 }
-
-componentsAssembly();
+halfDuct();
+//componentsAssembly();
