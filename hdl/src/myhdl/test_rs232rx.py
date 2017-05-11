@@ -26,7 +26,7 @@ def test_rs232rx():
         for i in range(3):
             yield clk.negedge
         print "Starting to transmit"
-        for b in [0xFF, 0xAA, 0x00, 0x01, 0x55, 0xFF, 0xF0, 0x0F]:
+        for b in [0xFF, 0xAA, 0x00, 0x01, 0x55, 0xFF, 0xF0, 0x0F]+range(256):
             if not txReady:
                 yield txReady.posedge
             yield clk.negedge

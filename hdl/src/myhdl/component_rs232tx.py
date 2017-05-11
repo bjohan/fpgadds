@@ -1,6 +1,6 @@
 from myhdl import *
 
-def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv):
+def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv=100):
 
     baudTick = Signal(False)
     baudCnt = Signal(intbv(min=0, max=2**24))
