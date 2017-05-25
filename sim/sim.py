@@ -65,12 +65,19 @@ class Operator:
 class FrequencyModulatedSine(SignalSource):
 	def setModulator(self, modulator):
 		self.m = modulator
+		self.phase = 0
 
 	def getSamples(self, n):
 		timeSteps = self.getTimeSteps(n)
 		frequencies,t = self.m.getSamples(n)
-		phases = 2.0*np.pi*np.multiply(frequencies, timeSteps)
-		return self.compute(phases), timeSteps
+		phases = np.zeros(frequencies.shape)
+		i = 0
+		for f in frequencies:
+			phases[i] = self.phase;
+			self.phase += (self.f+f)*2*np.pi/self.r
+			i+=1
+		#phases = 2.0*np.pi*np.multiply(frequencies, timeSteps)
+		return self.compute(phases)*self.a, timeSteps
 
 
 class NoiseSource(SignalSource):
@@ -95,27 +102,50 @@ def dB(v):
 	return 10.0*np.log10(v)
 	
 
-def showFft(t, s):
+def showFft(sig, n):
+	s, t = sig.getSamples(n)
 	ftd = np.fft.fftshift(np.fft.fft(s))
 	plt.plot(dB(np.abs(ftd)))
 	plt.show()
 	print "plotted"
 
-rb = PhaseModulatedSine(20, 1,100000)
-rbNoise = NoiseSource(0, 0.1, 100000)
+
+def showSignal(sig, n):
+	s, t = sig.getSamples(n)
+	plt.plot(t, s);
+	plt.show()
+
+rate = 100000;
+stot = rate/10;
+
+
+#Create simulation of rubidium oscillator, phase noise only
+rb = PhaseModulatedSine(20, 1,rate)
+rbNoise = NoiseSource(0, 0.1, rate)
 rbNoiseLp = LowPass(rbNoise, 0.1)
 rb.setModulator(rbNoiseLp)
-s, t = rb.getSamples(100000)
-showFft(t,s)
-plt.show()
 
 
-n = NoiseSource(0, 1, 100);
-f = LowPass(n, 0.1)
-s, t  = f.getSamples(10000);
-showFft(t, s)
-plt.plot(t,s)
-plt.show()
+
+#Create simulation of crystal oscillator with frequency noise
+xt = FrequencyModulatedSine(280, 1, rate)
+xtNoise = NoiseSource(0, 2800/4, rate)
+xt.setModulator(xtNoise)
+showFft(xt, stot)
+showSignal(xt, stot)
+
+
+#s, t = rb.getSamples(100000)
+#showFft(t,s)
+#plt.show()
+
+
+#n = NoiseSource(0, 1, 100);
+#f = LowPass(n, 0.01)
+#s, t  = f.getSamples(10000);
+#showFft(t, s)
+#plt.plot(t,s)
+#plt.show()
 #fmo = ConstantSource(1, 1, 100)
 #fmf = SignalSource(1,0.1, 100)
 #fms = Operator(fmo, fmf)
