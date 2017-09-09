@@ -20,6 +20,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
+use work.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -31,12 +32,35 @@ use ieee.numeric_std.all;
 
 entity dds_papilio_pro_top_str is
     Port ( clk : in  STD_LOGIC;
+           rx : in STD_LOGIC;
+           tx : out STD_LOGIC;
            led1 : out  STD_LOGIC);
 end dds_papilio_pro_top_str;
 
 architecture Behavioral of dds_papilio_pro_top_str is
 signal counter : unsigned(31 downto 0);
+signal data : unsigned(7 downto 0);
+signal vld : std_logic;
+
 begin
+
+rx_inst: entity work.rs232rx 
+    port map(
+        rxdata => data,
+        rxValid => vld,
+        rxd => rx,
+        clk => clk,
+        baudDiv => to_unsigned(1667,24));
+
+tx_inst: entity work.rs232tx 
+    port map(
+        toTx => data,
+        txValid => vld,
+        txd => tx,
+        clk => clk,
+        baudDiv => to_unsigned(1667,24));
+
+
 p_coount : process(clk)
 begin
 	if rising_edge(clk) then
