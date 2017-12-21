@@ -28,7 +28,7 @@ class SignalSource(Signal):
         """Get n samples from source, autmatically steps time"""
         timeSteps = self.getTimeSteps(n)
         phases = 2.0*np.pi*timeSteps*self.f
-        return self.compute(phases)*self.a, timeSteps;
+        return {'o': (self.compute(phases)*self.a, timeSteps, self)}
 
     def compute(self, phases):
         return np.exp(1j*phases)
@@ -44,9 +44,10 @@ class Filter(Signal):
     
     def getSamples(self, n):
         #t = self.getTimeSteps(n)
-        s, t = self.i.getSamples(n)
+        indata = self.i.getSamples(n);
+        s, t, gen = indata['o'] #self.i.getSamples(n)
         f = self.filter(s, t)
-        return f, t
+        return {'o':(f, t, self), 'i':{'in': indata}}
 
     def filter(self, s, t):
         return  s, t
@@ -61,10 +62,11 @@ class LowPass(Filter):
         return self.i.getDescription()+" filtered by iir lowpass alpha "+str(self.a);
     
     def filter(self, s, t):
-        output = np.zeros(s.shape)
+        output = np.zeros(s.shape, dtype=np.complex_)
         for i in range(len(s)):
             if self.l is None:
                 output[i]=s[i]
+                print s[i], output[i]
             else:
                 output[i] = self.l*(1-self.a)+self.a*s[i]
             self.l = output[i]
@@ -111,8 +113,13 @@ class SquareSource(SignalSource):
     def __init__(self, f, a, rate, signalName = "unnamed"):
         SignalSource.__init__(self, f, a, rate, signalName, "Square source");
 
+    def complexSign(self, v):
+        real = np.sign(np.real(v))
+        cplx = np.sign(np.imag(v))
+        return real+1j*cplx
+
     def compute(self, phases):
-        return np.sign(np.exp(1j*phases))
+        return self.complexSign(np.exp(1j*phases))
 
 class NoiseSource(SignalSource):
     def compute(self, phases):
@@ -144,10 +151,17 @@ def showFft(sig, n):
     print "plotted"
 
 
+
+def plotSignal(x, y, name):
+    plt.plot(x,y);
+
 def showSignal(sig, n):
-    s, t = sig.getSamples(n)
-    plt.plot(t, s);
-    plt.title(sig.getDescription())
+    sigdata = sig.getSamples(n)
+    s, t, gen = sigdata['o']
+    #plt.plot(np.real(s), np.imag(s))
+    plt.plot(t, np.real(s));
+    plt.plot(t, np.imag(s));
+    plt.title(gen.getDescription())
     plt.show()
 
 
