@@ -12,6 +12,7 @@ txValid = Signal(False)
 rxValid = Signal(False)
 txReady = Signal(False)
 txd = Signal(True)
+reset = Signal(False)
 
-rs232rx_inst = toVHDL(rs232rx, rxdata, rxValid, txd, clk, baudDiv);
+rs232rx_inst = toVHDL(rs232rx, reset, rxdata, rxValid, txd, clk, baudDiv);
 

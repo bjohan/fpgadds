@@ -23,10 +23,14 @@ def rmii_smi(clk, mdi, mdo, mdioz, mdc, clkdiv, addr, rdata, wdata, wstart, rsta
     currentBit = Signal(intbv(0, min=0, max=33));
     completeWord = Signal(intbv(0, min=0, max=2**32))
     phyAddrRev = Signal(intbv(0)[5:])
-    width = Signal(intbv(5))
+    addrRev = Signal(intbv(0)[4:])
+    wdataRev = Signal(intbv(0)[16:])
+    #width = Signal(intbv(5))
 
     phyAddr = Signal(intbv(0x0c)[5:])
-    inst_reverser = reversebv(phyAddr, phyAddrRev, width)
+    inst_phyAddrReverser = reversebv(phyAddr, phyAddrRev, intbv(5))
+    inst_addrReverser = reversebv(addr, addrRev, intbv(4))
+    inst_dataReverser = reversebv(wdata, wdataRev, intbv(16));
 
     @always(clk.posedge)
     def logic():
@@ -51,9 +55,9 @@ def rmii_smi(clk, mdi, mdo, mdioz, mdc, clkdiv, addr, rdata, wdata, wstart, rsta
                 completeWord.next[2:0]=startSeq #intbv(0x00) #start
                 completeWord.next[4:2]=wrOp #intbv(0x03) #write
                 completeWord.next[9:4]=phyAddrRev #intbv(0x0c) #default phy addr
-                completeWord.next[13:9]=intbv(0);#addr;
+                completeWord.next[13:9]=addrRev;
                 completeWord.next[15:14]=wrTa #intbv(0x1); #TA
-                completeWord.next[31:16]=wdata;
+                completeWord.next[31:15]=wdataRev;
                 mdioz.next=False;
                 mdo.next = startSeq[0] #First bit in start
         elif state == t_State.WRITE:
@@ -68,4 +72,4 @@ def rmii_smi(clk, mdi, mdo, mdioz, mdc, clkdiv, addr, rdata, wdata, wstart, rsta
                         busy.next = False;
                         state.next = t_State.IDLE
             
-    return logic, inst_reverser
+    return logic, inst_phyAddrReverser, inst_addrReverser, inst_dataReverser

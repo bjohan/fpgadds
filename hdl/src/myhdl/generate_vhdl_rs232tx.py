@@ -11,6 +11,6 @@ baudDiv = Signal(intbv(min=0, max=2**24))
 txValid = Signal(False)
 txReady = Signal(False)
 txd = Signal(True)
-
-rs232tx_inst = toVHDL(rs232tx, toTx, txValid, txReady, txd, clk, baudDiv);
+reset = Signal(False)
+rs232tx_inst = toVHDL(rs232tx, reset, toTx, txValid, txReady, txd, clk, baudDiv);
 

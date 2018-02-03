@@ -1,6 +1,6 @@
 from myhdl import *
 
-def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv=100):
+def rs232tx(reset, toTx, txValid, txReady, txd, clk, baudDiv=100):
 
     baudTick = Signal(False)
     baudCnt = Signal(intbv(min=0, max=2**24))
@@ -34,6 +34,11 @@ def rs232tx(toTx, txValid, txReady, txd, clk, baudDiv=100):
         elif currentBit == 0:
             txReady.next = True
             txd.next = True
+        if reset == True:
+            baudTick.next = False
+            baudCnt.next = 0
+            currentBit.next = 0
+            completeWord.next = 0
 
 
     return logic

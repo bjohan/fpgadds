@@ -10,15 +10,20 @@ def test_rs232tx():
     txValid = Signal(False)
     txReady = Signal(False)
     txd = Signal(False)
+    reset = Signal(True)
 
     @always(delay(10))
     def clkgen():
         clk.next = not clk
 
-    rs232tx_inst = rs232tx(toTx, txValid, txReady, txd, clk)
+    rs232tx_inst = rs232tx(reset, toTx, txValid, txReady, txd, clk)
 
     @instance
     def stimulus():
+        print "Synchronous reset"
+        for i in range(3):
+            yield clk.negedge
+        reset.next = False
         print "Waiting 3 clks"
         for i in range(3):
             yield clk.negedge
