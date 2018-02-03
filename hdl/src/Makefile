@@ -10,7 +10,7 @@ PART = xc6slx9-tqg144-3
 MAP_OPTS = -intstyle ise -p $(PART) -w -logic_opt off -ol high -t 1 -xt 0 -register_duplication off -r 4 -global_opt off -mt off -ir off -pr off -lc off -power off
 PAR_OPTS = -w -intstyle ise -ol high -mt off 
 TRCE_OPTS = -intstyle ise -v 3 -s 3 -n 3 -fastpaths
-ISE_PATH = /home/bjohan/opt/Xilinx/14.7/ISE_DS
+ISE_PATH = /home/bjohan/opt/xilinx/14.7/ISE_DS
 ISE_SETUP = $(ISE_PATH)/settings64.sh
 
 define run_xilinx_environment
@@ -81,8 +81,8 @@ $(TB).syr: proj_struct $(TARGET).prj $(TB).xst $(TB).prj
 $(TB).ngd: $(TB).syr
 	$(call run_xilinx_environment, ngdbuild -intstyle ise -dd _ngo -nt timestamp -p $(PART) $(TB).ngc $(TB).ngd)
 
-$(TARGET).exe: $(TB).ngd
-	$(call run_xilinx_environment, fuse -intstyle ise -incremental -lib secureip -o $(TARGET).exe -prj $(TARGET).prj work.tb {})
+#$(TARGET).exe: $(TB).ngd
+#	$(call run_xilinx_environment, fuse -intstyle ise -incremental -lib secureip -o $(TARGET).exe -prj $(TARGET).prj work.tb {})
 
 $(TARGET).ngc: $(TARGET).xst $(TARGET).prj proj_struct
 	$(call run_xilinx_environment, xst -ifn $(TARGET).xst -ofn $(TARGET).syr)
@@ -103,6 +103,16 @@ $(TARGET).twr: $(TARGET)_map.ncd
 $(TARGET).bit: $(TARGET).ncd
 	$(call run_xilinx_environment, bitgen $(BITGEN_OPTS) $(TARGET).ncd)
 
+$(TARGET).exe : $(TARGET).prj
+	$(call run_xilinx_environment, fuse tb -prj $(TARGET).prj -o $(TARGET).exe)
+
+sim_gui : $(TARGET).exe
+ifndef WCFG
+	$(call run_xilinx_environment, ./$(TARGET).exe -gui)
+endif
+ifdef WCFG
+	$(call run_xilinx_environment, ./$(TARGET).exe -gui -view $(WCFG))
+endif
 #$(TARGET).svf: $(TARGET).bit impact.cmd
 #	sed -e s/XXX/$(subst .bit,,$<)/ < impact.cmd > tmp.cmd
 #	impact -batch tmp.cmd
@@ -123,4 +133,6 @@ clean:
 	rm -f par_usage_statistics.html
 	rm -f usage_statistics_webtalk.html
 	rm -f webtalk.log
+	rm -f $(TARGET).exe isim.log isim.wdb fuse.log fuseRelaunch.cmd fuse.xmsgs
+	rm -rf isim
 

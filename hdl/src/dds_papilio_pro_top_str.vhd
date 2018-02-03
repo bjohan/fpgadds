@@ -34,6 +34,7 @@ entity dds_papilio_pro_top_str is
     Port ( clk : in  STD_LOGIC;
            rx : in STD_LOGIC;
            tx : out STD_LOGIC;
+    	   reset : in STD_LOGIC;
            led1 : out  STD_LOGIC);
 end dds_papilio_pro_top_str;
 
@@ -46,6 +47,7 @@ begin
 
 rx_inst: entity work.rs232rx 
     port map(
+        reset => reset,
         rxdata => data,
         rxValid => vld,
         rxd => rx,
@@ -54,6 +56,7 @@ rx_inst: entity work.rs232rx
 
 tx_inst: entity work.rs232tx 
     port map(
+        reset => reset,
         toTx => data,
         txValid => vld,
         txd => tx,
@@ -64,7 +67,11 @@ tx_inst: entity work.rs232tx
 p_coount : process(clk)
 begin
 	if rising_edge(clk) then
-		counter <= counter + 1;
+		if reset = '1' then
+			counter <= to_unsigned(0, 32);
+		else
+			counter <= counter + 1;
+		end if;
 	end if;
 end process;
 led1 <= counter(20);

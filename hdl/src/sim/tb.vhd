@@ -35,16 +35,27 @@ end tb;
 architecture Behavioral of tb is
 component dds_papilio_pro_top_str
     Port ( clk : in  STD_LOGIC;
+    	   rx : in STD_LOGIC;
+    	   tx : out STD_LOGIC;
+    	   reset : in STD_LOGIC;
            led1 : out  STD_LOGIC);
 end component;
 
 
 signal clk  : std_logic:= '0';
-signal led : std_logic;
+signal led : std_logic:='0';
+signal rx : std_logic:='0';
+signal reset : std_logic:='1';
+signal tx : std_logic;
+
 
 begin
+--reset <= '1' after 0 ns;
+clk <= not clk after 15.625 ns;
+reset <= '0' after 60 ns;
+
 i_top : dds_papilio_pro_top_str
-port map(clk => clk, led1 => led);
+port map(clk => clk, led1 => led, rx => rx, reset=>reset, tx => tx);
 
 end Behavioral;
 
