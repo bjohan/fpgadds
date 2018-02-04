@@ -1,10 +1,10 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity tb is
-end tb;
+entity dds_tb is
+end dds_tb;
 
-architecture Behavioral of tb is
+architecture Behavioral of dds_tb is
 --component phase_accumulator
 --    Port ( clk : in  STD_LOGIC;
 --           led1 : out  STD_LOGIC);

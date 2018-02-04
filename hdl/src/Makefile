@@ -2,7 +2,17 @@ TARGET = dds_papilio_pro_top_str
 VLOGS = 
 VLOGS_ALL = $(VLOGS)
 MYHDLS = rs232tx.vhd rs232rx.vhd
-VHDLS = dds_papilio_pro_top_str.vhd sim/tb.vhd myhdl/rs232tx.vhd myhdl/rs232rx.vhd myhdl/pck_myhdl_090.vhd
+VHDLS = dds_papilio_pro_top_str.vhd\
+	sim/tb.vhd\
+	myhdl/rs232tx.vhd\
+	myhdl/rs232rx.vhd\
+	myhdl/pck_myhdl_090.vhd\
+	components/phase_accumulator.vhd\
+	components/lut.vhdl\
+	components/lut_interp.vhdl\
+	components/folder.vhdl\
+	components/dds_tb.vhdl
+
 VHDLS_ALL = $(VHDLS)
 SRCS_ALL = $(VLOGS_ALL) $(VHDLS_ALL)
 TB = tb
@@ -12,6 +22,8 @@ PAR_OPTS = -w -intstyle ise -ol high -mt off
 TRCE_OPTS = -intstyle ise -v 3 -s 3 -n 3 -fastpaths
 ISE_PATH = /home/bjohan/opt/xilinx/14.7/ISE_DS
 ISE_SETUP = $(ISE_PATH)/settings64.sh
+TEST_BENCH ?= tb
+VCD_FILE ?= simulation_result.vcd
 
 define run_xilinx_environment
     bash -c 'source $(ISE_SETUP) ; $(1)'
@@ -62,6 +74,14 @@ proj_struct:
 	@mkdir -p xst/projnav.tmp
 	@echo work > $(TARGET).lso
 
+
+sim_commands.tcl: FORCE
+	echo "vcd dumpfile $(VCD_FILE)" > sim_commands.tcl
+	echo "vcd dumpvars -m $(TEST_BENCH) -l 0" >> sim_commands.tcl
+	echo "run $(SIM_RUN)" >> sim_commands.tcl
+	echo "exit" >> sim_commands.tcl	
+FORCE:
+
 $(TARGET).prj: $(SRCS_ALL)
 	@rm -f $(TARGET).prj
 	@for i in $(MYHDLS); do make -C myhdl $$i; done
@@ -104,7 +124,7 @@ $(TARGET).bit: $(TARGET).ncd
 	$(call run_xilinx_environment, bitgen $(BITGEN_OPTS) $(TARGET).ncd)
 
 $(TARGET).exe : $(TARGET).prj
-	$(call run_xilinx_environment, fuse tb -prj $(TARGET).prj -o $(TARGET).exe)
+	$(call run_xilinx_environment, fuse $(TEST_BENCH) -prj $(TARGET).prj -o $(TARGET).exe)
 
 sim_gui : $(TARGET).exe
 ifndef WCFG
@@ -113,6 +133,10 @@ endif
 ifdef WCFG
 	$(call run_xilinx_environment, ./$(TARGET).exe -gui -view $(WCFG))
 endif
+
+vcd : $(TARGET).exe sim_commands.tcl
+	$(call run_xilinx_environment, ./$(TARGET).exe -tclbatch sim_commands.tcl)
+	
 #$(TARGET).svf: $(TARGET).bit impact.cmd
 #	sed -e s/XXX/$(subst .bit,,$<)/ < impact.cmd > tmp.cmd
 #	impact -batch tmp.cmd

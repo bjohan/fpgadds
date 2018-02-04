@@ -31,7 +31,7 @@ signal fracx0 : signed(ibits - 1 downto 0);
 signal y0 : std_logic_vector(ybits - 1 downto 0);
 signal y1 : std_logic_vector(ybits - 1 downto 0);
 signal d : std_logic_vector(ybits -1 downto 0);
-signal prod : std_logic_vector(ybits+ibits - 1 downto 0);
+signal prod : signed(ybits+ibits - 1 downto 0);
 signal diff : signed(ybits -1 downto 0);
 signal xr :  std_logic_vector(intbits+fracbits-1 downto 0);
 signal xrr :  std_logic_vector(intbits+fracbits-1 downto 0);
@@ -63,7 +63,7 @@ begin
 			--intx0 <= vintx0;
 			--vintx1 := std_logic_vector(unsigned(xr(intbits+fracbits-1 downto fracbits))+1);
 			--intx1 <= vintx1;
-			vfracx0 := signed(x(fracbits-1 downto fracbits -ibits));
+			vfracx0 := signed(xrr(fracbits-1 downto fracbits -ibits));
 			fracx0 <= vfracx0;
 		 	
 			--fracx0 <= x(56-1 downto 0);
@@ -72,10 +72,11 @@ begin
 			vd := std_logic_vector(diff);
 
 			vprod := vdiff*vfracx0;
-			prod <= std_logic_vector(vprod);
+			prod <= vprod;
 			--interp := diff*fracx0;
 			--delta := interp(ybits+fracbits-1 downto ybits-intbits);
-			y <= std_logic_vector(signed(y0)+signed(prod)(ybits+ibits-1 downto ibits)); -- + delta;
+			y <= std_logic_vector(signed(y0)+prod(ybits+ibits-1 downto ibits)); -- + delta;
+			--y <= y0;
 		end if;
 	end process;
 
