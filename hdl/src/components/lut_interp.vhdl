@@ -40,7 +40,7 @@ signal fracrrr : std_logic_vector(fracbits-1 downto 0);
 
 signal diffrrr : std_logic_vector(ybits -1 downto 0);
 
-signal interprrrr : std_logic_vector(fracbits+ybits-1 downto 0);
+signal interprrrr : std_logic_vector(fracbits+ybits-1+1 downto 0);
 
 
 

@@ -34,16 +34,72 @@ entity dds_papilio_pro_top_str is
     Port ( clk : in  STD_LOGIC;
            rx : in STD_LOGIC;
            tx : out STD_LOGIC;
+           a : out std_logic_vector(12 downto 0);
     	   reset : in STD_LOGIC;
            led1 : out  STD_LOGIC);
 end dds_papilio_pro_top_str;
 
 architecture Behavioral of dds_papilio_pro_top_str is
+
+component phase_accumulator
+	generic(bits : integer := 64);
+    	port ( 
+		reset : in STD_LOGIC;
+		clk : in  STD_LOGIC;
+	
+		phase_modulation : in std_logic_vector(bits - 1 downto 0);
+		phase_step	: in std_logic_vector(bits - 1 downto 0);
+		phase_out	: out std_logic_vector(bits - 1 downto 0)
+           	);
+end component;
+
+
+component lookup_table_interpolated
+    	port ( 
+		clk : in  STD_LOGIC;
+	
+		x 	: in std_logic_vector(63 downto 0);
+		y	: out std_logic_vector(12 downto 0)
+           	);
+end component;
+
+
+
+
 signal counter : unsigned(31 downto 0);
 signal data : unsigned(7 downto 0);
 signal vld : std_logic;
 
+
+
+
+signal y : std_logic_vector(12 downto 0);
+constant step : std_logic_vector(63 downto 0):= x"0030000000000001";
+signal phase_out : std_logic_vector(63 downto 0);
+
+
+
 begin
+
+
+
+i_phase_acc : phase_accumulator
+	port map(
+		reset => reset,
+		clk => clk,
+		phase_modulation => (others => '0'),
+		phase_step => step,
+		phase_out => phase_out
+	);
+
+i_lut : lookup_table_interpolated
+    	port map( 
+		clk => clk,
+		x => phase_out, --(63 downto 56),
+		y => y
+           	);
+
+a<=y;
 
 rx_inst: entity work.rs232rx 
     port map(
