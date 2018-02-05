@@ -37,15 +37,15 @@ signal run : std_logic:='1';
 signal reset : std_logic:='1';
 
 signal y : std_logic_vector(12 downto 0);
-signal step : std_logic_vector(63 downto 0);
+signal step : std_logic_vector(63 downto 0):= x"0000000000000000";
 signal phase_out : std_logic_vector(63 downto 0);
 signal xfolded : std_logic_vector(7 downto 0);
 begin
 
-clk <= not clk after 10 ns when run = '1' else '0';
+clk <= not clk after 5 ns when run = '1' else '0';
 run <= '0' after 30 us;
 reset <= '0' after 100 ns;
-step <= x"0030000000000000";
+step <= x"0030000000000000" after 500 ns;
 
 i_phase_acc : phase_accumulator
 	port map(
