@@ -74,7 +74,8 @@ signal vld : std_logic;
 
 
 signal y : std_logic_vector(12 downto 0);
-constant step : std_logic_vector(63 downto 0):= x"0030000000000001";
+--constant step : std_logic_vector(63 downto 0):= x"0030000000000001";
+constant step : std_logic_vector(63 downto 0):= x"703123412312eef1";
 signal phase_out : std_logic_vector(63 downto 0);
 
 
@@ -118,7 +119,6 @@ tx_inst: entity work.rs232tx
         txd => tx,
         clk => clk,
         baudDiv => to_unsigned(1667,24));
-
 
 p_coount : process(clk)
 begin
