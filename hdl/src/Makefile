@@ -11,6 +11,7 @@ VHDLS = dds_papilio_pro_top_str.vhd\
 	components/lut.vhdl\
 	components/lut_interp.vhdl\
 	components/folder.vhdl\
+    ip/pll/clk_wiz_v3_6.vhd\
 	components/dds_tb.vhdl
 
 VHDLS_ALL = $(VHDLS)
@@ -65,7 +66,6 @@ BITGEN_OPTS = \
 
 
 
-
 fpga_target: $(TARGET).bit
 	sudo papilio-prog -f $(TARGET).bit
 
@@ -74,6 +74,24 @@ proj_struct:
 	@mkdir -p xst/projnav.tmp
 	@echo work > $(TARGET).lso
 
+
+create_plan_ahead_project.tcl: $(TARGET).ngc $(TARGET).ucf $(TARGET).twx $(TARGET).ncd
+	@echo "start_gui" > create_plan_ahead_project.tcl
+	@echo "create_project tmp_proj /tmp/tmp_proj -part $(PART) -force" >> create_plan_ahead_project.tcl
+	@echo "set_property design_mode GateLvl [current_fileset]" >> create_plan_ahead_project.tcl
+	@echo "add_files -norecurse $(TARGET).ngc" >> create_plan_ahead_project.tcl
+	@echo "import_files -force -norecurse" >> create_plan_ahead_project.tcl
+	@echo "import_files -fileset constrs_1 -force -norecurse $(TARGET).ucf" >> create_plan_ahead_project.tcl
+	@echo "import_as_run -run impl_1 -twx $(TARGET).twx $(TARGET).ncd" >> create_plan_ahead_project.tcl
+	@echo "open_run impl_1" >> create_plan_ahead_project.tcl
+	@echo "reset_run impl_1" >> create_plan_ahead_project.tcl
+	@echo "launch_runs impl_1" >> create_plan_ahead_project.tcl
+	@echo "wait_on_run impl_1" >> create_plan_ahead_project.tcl
+	@echo "report_drc -name drc_1" >> create_plan_ahead_project.tcl
+
+plan_ahead : create_plan_ahead_project.tcl
+	$(call run_xilinx_environment, planAhead -source create_plan_ahead_project.tcl)
+    
 
 sim_commands.tcl: FORCE
 	echo "vcd dumpfile $(VCD_FILE)" > sim_commands.tcl
@@ -116,7 +134,7 @@ $(TARGET)_map.ncd: $(TARGET).ngd
 $(TARGET).ncd: $(TARGET)_map.ncd
 	$(call run_xilinx_environment, par $(PAR_OPTS) $(TARGET)_map.ncd $(TARGET).ncd $(TARGET).pcf)
 
-$(TARGET).twr: $(TARGET)_map.ncd
+$(TARGET).twr $(TARGET).twx: $(TARGET).ncd
 	# -xml dds_papilio_pro_top_str.twx dds_papilio_pro_top_str.ncd -o dds_papilio_pro_top_str.twr dds_papilio_pro_top_str.pcf 
 	$(call run_xilinx_environment, trce $(TRCE_OPTS) -xml $(TARGET).twx $(TARGET).ncd -o $(TARGET).twr $(TARGET).pcf)
 
@@ -150,13 +168,17 @@ clean:
 	rm -rf _xmsgs
 	rm -rf _ngo
 	rm -f tmp.cmd
+	rm -f create_plan_ahead_project.tcl
+	rm -f sim_commands.tcl
 	rm -f _impactbatch.log
 	rm -f $(TARGET).prj
+	rm -f $(TARGET).twx
 	rm -f $(TARGET).lso
 	rm -f $(TARGET)_bitgen.xwbt
 	rm -f par_usage_statistics.html
 	rm -f usage_statistics_webtalk.html
 	rm -f webtalk.log
 	rm -f $(TARGET).exe isim.log isim.wdb fuse.log fuseRelaunch.cmd fuse.xmsgs
+	rm -f planAhead*
 	rm -rf isim
 

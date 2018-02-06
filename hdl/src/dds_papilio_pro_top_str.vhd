@@ -31,7 +31,7 @@ use work.all;
 --use UNISIM.VComponents.all;
 
 entity dds_papilio_pro_top_str is
-    Port ( clk : in  STD_LOGIC;
+    Port ( clkin : in  STD_LOGIC;
            rx : in STD_LOGIC;
            tx : out STD_LOGIC;
            a : out std_logic_vector(12 downto 0);
@@ -63,14 +63,28 @@ component lookup_table_interpolated
            	);
 end component;
 
-
-
+component clk_wiz_v3_6
+port
+ ( -- Clock in ports
+  CLK_IN1           : in     std_logic;
+  -- Clock out ports
+  CLK_OUT1          : out    std_logic;
+  CLK_OUT2          : out    std_logic;
+  CLK_OUT3          : out    std_logic;
+  -- Status and control signals
+  RESET             : in     std_logic;
+  LOCKED            : out    std_logic
+ );
+end component;
 
 signal counter : unsigned(31 downto 0);
 signal data : unsigned(7 downto 0);
 signal vld : std_logic;
+signal clk : std_logic;
 
-
+signal clk100 : std_logic;
+signal clk200 : std_logic;
+signal clk400 : std_logic;
 
 
 signal y : std_logic_vector(12 downto 0);
@@ -81,13 +95,20 @@ signal phase_out : std_logic_vector(63 downto 0);
 
 
 begin
-
-
+clk<=clk100;
+i_clks : clk_wiz_v3_6
+    port map (
+        clk_in1 => clkin,
+        reset => reset,
+        locked => open,
+        clk_out1 => clk100,
+        clk_out2 => clk200,
+        clk_out3 => clk400);
 
 i_phase_acc : phase_accumulator
 	port map(
 		reset => reset,
-		clk => clk,
+		clk => clk200,
 		phase_modulation => (others => '0'),
 		phase_step => step,
 		phase_out => phase_out
@@ -130,7 +151,7 @@ begin
 		end if;
 	end if;
 end process;
-led1 <= counter(20);
+led1 <= counter(24);
 
 end Behavioral;
 
