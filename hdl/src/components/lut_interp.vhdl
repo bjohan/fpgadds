@@ -40,7 +40,7 @@ signal fracrrr : std_logic_vector(fracbits-1 downto 0);
 
 signal diffrrr : std_logic_vector(ybits -1 downto 0);
 
-signal interprrrr : std_logic_vector(fracbits+ybits-1+1 downto 0);
+signal interprrrr : std_logic_vector(18+ybits-1 downto 0);
 
 
 
@@ -87,9 +87,9 @@ begin
 
             diffrrr <= std_logic_vector(signed(yp1lutrr)-signed(ylutrr));
 
-            interprrrr <= std_logic_vector(signed('0'&fracrrr)*signed(diffrrr));
+            interprrrr <= std_logic_vector(signed('0'&fracrrr(fracbits-1 downto fracbits-17))*signed(diffrrr));
 
-            y <= std_logic_vector(signed(ylutrrrr)+signed(interprrrr(ybits+fracbits-1-1 downto fracbits-1)));
+            y <= std_logic_vector(signed(ylutrrrr)+signed(interprrrr(18+ybits-2 downto 18-1)));
 			--xrrrr <= x;
 			--xrrr<= xrrrr;
 			--xrr <= xrrr;
