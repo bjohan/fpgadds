@@ -69,6 +69,7 @@ begin
             diffrrrr <= diffrrr;
 
             interprrrr <= std_logic_vector(signed('0'&fracrrrr(fracbits-1 downto fracbits-17))*signed(diffrrrr));
+            interprrrrr <= interprrrr;
 
             y <= std_logic_vector(signed(ylutrrrrr)+signed(interprrrrr(18+ybits-2 downto 18-1)));
 		end if;
