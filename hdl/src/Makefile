@@ -79,7 +79,7 @@ proj_struct: xst/projnav.tmp $(TARGET).lso
 	@echo "Making xst project structure"	
 
 
-create_plan_ahead_project.tcl: $(TARGET).ngc $(TARGET).ucf $(TARGET).twx $(TARGET).ncd
+create_plan_ahead_project.tcl: $(TARGET).syr $(TARGET).ucf $(TARGET).twx $(TARGET).ncd
 	@echo "start_gui" > create_plan_ahead_project.tcl
 	@echo "create_project tmp_proj /tmp/tmp_proj -part $(PART) -force" >> create_plan_ahead_project.tcl
 	@echo "set_property design_mode GateLvl [current_fileset]" >> create_plan_ahead_project.tcl
@@ -87,11 +87,11 @@ create_plan_ahead_project.tcl: $(TARGET).ngc $(TARGET).ucf $(TARGET).twx $(TARGE
 	@echo "import_files -force -norecurse" >> create_plan_ahead_project.tcl
 	@echo "import_files -fileset constrs_1 -force -norecurse $(TARGET).ucf" >> create_plan_ahead_project.tcl
 	@echo "import_as_run -run impl_1 -twx $(TARGET).twx $(TARGET).ncd" >> create_plan_ahead_project.tcl
-	@echo "open_run impl_1" >> create_plan_ahead_project.tcl
-	@echo "reset_run impl_1" >> create_plan_ahead_project.tcl
-	@echo "launch_runs impl_1" >> create_plan_ahead_project.tcl
-	@echo "wait_on_run impl_1" >> create_plan_ahead_project.tcl
-	@echo "report_drc -name drc_1" >> create_plan_ahead_project.tcl
+	#@echo "open_run impl_1" >> create_plan_ahead_project.tcl
+	#@echo "reset_run impl_1" >> create_plan_ahead_project.tcl
+	#@echo "launch_runs impl_1" >> create_plan_ahead_project.tcl
+	#@echo "wait_on_run impl_1" >> create_plan_ahead_project.tcl
+	#@echo "report_drc -name drc_1" >> create_plan_ahead_project.tcl
 
 plan_ahead : create_plan_ahead_project.tcl
 	$(call run_xilinx_environment, planAhead -source create_plan_ahead_project.tcl)
@@ -127,16 +127,16 @@ $(TB).ngd: $(TB).syr
 #	$(call run_xilinx_environment, fuse -intstyle ise -incremental -lib secureip -o $(TARGET).exe -prj $(TARGET).prj work.tb {})
 
 $(TARGET).syr: $(TARGET).xst $(TARGET).prj xst/projnav.tmp $(TARGET).lso
-	$(call run_xilinx_environment, xst -ifn $(TARGET).xst -ofn $(TARGET).syr)
+	$(call run_xilinx_environment, xst -ifn $(TARGET).xst -ofn $(TARGET).syr | tee synth.log)
 
 $(TARGET).ngd: $(TARGET).syr $(TARGET).ucf
 	$(call run_xilinx_environment, ngdbuild -dd _ngo -uc $(TARGET).ucf -nt timestamp -p $(PART) "$(TARGET).ngc" $(TARGET).ngd)
 
 $(TARGET)_map.ncd: $(TARGET).ngd
-	$(call run_xilinx_environment, map $(MAP_OPTS) -o $(TARGET)_map.ncd $(TARGET).ngd $(TARGET).pcf)
+	$(call run_xilinx_environment, map $(MAP_OPTS) -o $(TARGET)_map.ncd $(TARGET).ngd $(TARGET).pcf | tee map.log)
 
 $(TARGET).ncd: $(TARGET)_map.ncd
-	$(call run_xilinx_environment, par $(PAR_OPTS) $(TARGET)_map.ncd $(TARGET).ncd $(TARGET).pcf)
+	$(call run_xilinx_environment, par $(PAR_OPTS) $(TARGET)_map.ncd $(TARGET).ncd $(TARGET).pcf | tee place_and_route.log)
 
 $(TARGET).twr $(TARGET).twx: $(TARGET).ncd
 	# -xml dds_papilio_pro_top_str.twx dds_papilio_pro_top_str.ncd -o dds_papilio_pro_top_str.twr dds_papilio_pro_top_str.pcf 
@@ -182,6 +182,9 @@ clean:
 	rm -f par_usage_statistics.html
 	rm -f usage_statistics_webtalk.html
 	rm -f webtalk.log
+	rm -f synth.log
+	rm -f map.log
+	rm -f place_and_route.log
 	rm -f $(TARGET).exe isim.log isim.wdb fuse.log fuseRelaunch.cmd fuse.xmsgs
 	rm -f planAhead*
 	rm -rf isim
