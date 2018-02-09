@@ -65,14 +65,18 @@ BITGEN_OPTS = \
 	-g sw_gts_cycle:4 
 
 
-
 fpga_target: $(TARGET).bit
 	sudo papilio-prog -f $(TARGET).bit
 
-
-proj_struct: 
+xst/projnav.tmp:
 	@mkdir -p xst/projnav.tmp
+
+$(TARGET).lso:
 	@echo work > $(TARGET).lso
+
+.PHONY: proj_struct
+proj_struct: xst/projnav.tmp $(TARGET).lso
+	@echo "Making xst project structure"	
 
 
 create_plan_ahead_project.tcl: $(TARGET).ngc $(TARGET).ucf $(TARGET).twx $(TARGET).ncd
@@ -122,10 +126,10 @@ $(TB).ngd: $(TB).syr
 #$(TARGET).exe: $(TB).ngd
 #	$(call run_xilinx_environment, fuse -intstyle ise -incremental -lib secureip -o $(TARGET).exe -prj $(TARGET).prj work.tb {})
 
-$(TARGET).ngc: $(TARGET).xst $(TARGET).prj proj_struct
+$(TARGET).syr: $(TARGET).xst $(TARGET).prj xst/projnav.tmp $(TARGET).lso
 	$(call run_xilinx_environment, xst -ifn $(TARGET).xst -ofn $(TARGET).syr)
 
-$(TARGET).ngd: $(TARGET).ngc $(TARGET).ucf
+$(TARGET).ngd: $(TARGET).syr $(TARGET).ucf
 	$(call run_xilinx_environment, ngdbuild -dd _ngo -uc $(TARGET).ucf -nt timestamp -p $(PART) "$(TARGET).ngc" $(TARGET).ngd)
 
 $(TARGET)_map.ncd: $(TARGET).ngd
