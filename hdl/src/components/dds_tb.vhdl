@@ -43,9 +43,9 @@ signal xfolded : std_logic_vector(7 downto 0);
 begin
 
 clk <= not clk after 5 ns when run = '1' else '0';
-run <= '0' after 30 us;
+run <= '0' after 300 us;
 reset <= '0' after 100 ns;
-step <= x"0030000000000000" after 500 ns;
+step <= x"0331010101010101" after 500 ns;
 
 i_phase_acc : phase_accumulator
 	port map(

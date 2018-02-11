@@ -46,7 +46,9 @@ signal diffrrrr : std_logic_vector(ybits -1 downto 0);
 signal interprrrr : std_logic_vector(18+ybits-1 downto 0);
 signal interprrrrr : std_logic_vector(18+ybits-1 downto 0);
 
-
+constant fracrr_round_lz : std_logic_vector(16 downto 0):=(others => '0');
+constant fracrr_round_tz : std_logic_vector(fracbits-2-17 downto 0):=(others => '0');
+constant fracrr_round : std_logic_vector(fracbits-1 downto 0) := fracrr_round_lz & '1' &fracrr_round_tz;
 begin
 	
 	p_coount : process(clk)
@@ -58,7 +60,7 @@ begin
 
             fracr <= x(fracbits-1 downto 0);
             fracrr <= fracr;
-            fracrrr <= fracrr;
+            fracrrr <= std_logic_vector(unsigned(fracrr)+unsigned(fracrr_round));
             fracrrrr <= fracrrr;
 
             ylutrrr <= ylutrr;
@@ -71,7 +73,7 @@ begin
             interprrrr <= std_logic_vector(signed('0'&fracrrrr(fracbits-1 downto fracbits-17))*signed(diffrrrr));
             interprrrrr <= interprrrr;
 
-            y <= std_logic_vector(signed(ylutrrrrr)+signed(interprrrrr(18+ybits-2 downto 18-1)));
+            y <= std_logic_vector(signed(ylutrrrrr)+signed(interprrrr(18+ybits-2 downto 18-1)));
 		end if;
 	end process;
 
