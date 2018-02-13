@@ -126,10 +126,10 @@ $(TB).ngd: $(TB).syr
 #$(TARGET).exe: $(TB).ngd
 #	$(call run_xilinx_environment, fuse -intstyle ise -incremental -lib secureip -o $(TARGET).exe -prj $(TARGET).prj work.tb {})
 
-$(TARGET).syr: $(TARGET).xst $(TARGET).prj xst/projnav.tmp $(TARGET).lso
+$(TARGET).syr $(TARGET).ngc: $(TARGET).xst $(TARGET).prj xst/projnav.tmp $(TARGET).lso
 	$(call run_xilinx_environment, xst -ifn $(TARGET).xst -ofn $(TARGET).syr | tee synth.log)
 
-$(TARGET).ngd: $(TARGET).syr $(TARGET).ucf
+$(TARGET).ngd: $(TARGET).syr $(TARGET).ucf $(TARGET).ngc
 	$(call run_xilinx_environment, ngdbuild -dd _ngo -uc $(TARGET).ucf -nt timestamp -p $(PART) "$(TARGET).ngc" $(TARGET).ngd)
 
 $(TARGET)_map.ncd: $(TARGET).ngd

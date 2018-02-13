@@ -35,6 +35,7 @@ entity dds_papilio_pro_top_str is
            rx : in STD_LOGIC;
            tx : out STD_LOGIC;
            a : out std_logic_vector(12 downto 0);
+           c : out std_logic_vector(9 downto 0);
     	   reset : in STD_LOGIC;
            led1 : out  STD_LOGIC);
 end dds_papilio_pro_top_str;
@@ -88,10 +89,10 @@ signal clk400 : std_logic;
 
 
 signal y : std_logic_vector(12 downto 0);
---constant step : std_logic_vector(63 downto 0):= x"0030000000000001";
-constant step : std_logic_vector(63 downto 0):= x"703123412312eef1";
+constant step : std_logic_vector(63 downto 0):= x"1000000000000001";
+--constant step : std_logic_vector(63 downto 0):= x"703123412312eef1";
 signal phase_out : std_logic_vector(63 downto 0);
-
+signal cr : unsigned(9 downto 0);
 
 
 begin
@@ -116,13 +117,22 @@ i_phase_acc : phase_accumulator
 
 i_lut : lookup_table_interpolated
     	port map( 
-		clk => clk,
+		clk => clk200,
 		x => phase_out, --(63 downto 56),
 		y => y
            	);
 
 a<=y;
-
+--c(0) <= y(12);
+--c(1) <= y(11);
+--c(2) <= y(10);
+--c(3) <= y(9);
+--c(4) <= y(8);
+--c(5) <= y(7);
+--c(6) <= y(6);
+--c(7) <= y(5);
+--c(8) <= y(4);
+--c(9) <= y(3);
 rx_inst: entity work.rs232rx 
     port map(
         reset => reset,
@@ -140,6 +150,14 @@ tx_inst: entity work.rs232tx
         txd => tx,
         clk => clk,
         baudDiv => to_unsigned(1667,24));
+
+p_reg : process(clk200)
+begin
+    if rising_edge(clk200) then
+        cr <= unsigned(y(12 downto 3))+to_unsigned(512,10);
+        c <= std_logic_vector(cr);
+    end if;
+end process;
 
 p_coount : process(clk)
 begin
