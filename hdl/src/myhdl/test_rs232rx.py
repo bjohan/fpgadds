@@ -18,7 +18,7 @@ def test_rs232rx():
     def clkgen():
         clk.next = not clk
 
-    rs232tx_inst = rs232tx(toTx, txValid, txReady, txd, clk)
+    rs232tx_inst = rs232tx(reset, toTx, txValid, txReady, txd, clk)
     rs232rx_inst = rs232rx(reset, rxdata, rxValid, txd, clk);
 
     @instance
