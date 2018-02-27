@@ -25,7 +25,7 @@ ISE_PATH = /home/bjohan/opt/xilinx/14.7/ISE_DS
 ISE_SETUP = $(ISE_PATH)/settings64.sh
 TEST_BENCH ?= tb
 VCD_FILE ?= simulation_result.vcd
-
+XIL_ENV_CMD ?= coregen
 define run_xilinx_environment
     bash -c 'source $(ISE_SETUP) ; $(1)'
 endef
@@ -78,6 +78,9 @@ $(TARGET).lso:
 proj_struct: xst/projnav.tmp $(TARGET).lso
 	@echo "Making xst project structure"	
 
+.PHONY: xil_env_cmd
+xil_env_cmd :
+	$(call run_xilinx_environment, $(XIL_ENV_CMD));
 
 create_plan_ahead_project.tcl: $(TARGET).syr $(TARGET).ucf $(TARGET).twx $(TARGET).ncd
 	@echo "start_gui" > create_plan_ahead_project.tcl
