@@ -1,0 +1,5 @@
+to run top level test bench
+make vcd
+
+to run ethernet test bench:
+make vcd -e SIM_RUN=10us -e TEST_BENCH=phy_tb -e TARGET=phy_tb

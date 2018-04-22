@@ -7,12 +7,14 @@ VHDLS = dds_papilio_pro_top_str.vhd\
 	myhdl/rs232tx.vhd\
 	myhdl/rs232rx.vhd\
 	myhdl/pck_myhdl_090.vhd\
-	components/phase_accumulator.vhd\
-	components/lut.vhdl\
-	components/lut_interp.vhdl\
-	components/folder.vhdl\
-    ip/pll/clk_wiz_v3_6.vhd\
-	components/dds_tb.vhdl
+	components/dds/phase_accumulator.vhdl\
+	components/dds/lut.vhdl\
+	components/dds/lut_interp.vhdl\
+	components/dds/folder.vhdl\
+	components/dds/dds_tb.vhdl\
+	components/eth_phy/mdio.vhdl\
+	components/eth_phy/phy_tb.vhdl\
+	ip/pll/clk_wiz_v3_6.vhd
 
 VHDLS_ALL = $(VHDLS)
 SRCS_ALL = $(VLOGS_ALL) $(VHDLS_ALL)

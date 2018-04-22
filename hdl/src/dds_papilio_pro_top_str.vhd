@@ -86,7 +86,8 @@ signal clk : std_logic;
 signal clk100 : std_logic;
 signal clk200 : std_logic;
 signal clk400 : std_logic;
-
+signal locked : std_logic;
+signal reset_int : std_logic;
 
 signal y : std_logic_vector(12 downto 0);
 constant step : std_logic_vector(63 downto 0):= x"1000000000000001";
@@ -101,14 +102,16 @@ i_clks : clk_wiz_v3_6
     port map (
         clk_in1 => clkin,
         reset => reset,
-        locked => open,
+        locked => locked,
         clk_out1 => clk100,
         clk_out2 => clk200,
         clk_out3 => clk400);
 
+reset_int <= not locked;
+
 i_phase_acc : phase_accumulator
 	port map(
-		reset => reset,
+		reset => reset_int,
 		clk => clk200,
 		phase_modulation => (others => '0'),
 		phase_step => step,
@@ -135,7 +138,7 @@ a<=y;
 --c(9) <= y(3);
 rx_inst: entity work.rs232rx 
     port map(
-        reset => reset,
+        reset => reset_int,
         rxdata => data,
         rxValid => vld,
         rxd => rx,
@@ -144,7 +147,7 @@ rx_inst: entity work.rs232rx
 
 tx_inst: entity work.rs232tx 
     port map(
-        reset => reset,
+        reset => reset_int,
         toTx => data,
         txValid => vld,
         txd => tx,
@@ -162,7 +165,7 @@ end process;
 p_coount : process(clk)
 begin
 	if rising_edge(clk) then
-		if reset = '1' then
+		if reset_int = '1' then
 			counter <= to_unsigned(0, 32);
 		else
 			counter <= counter + 1;
