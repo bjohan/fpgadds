@@ -1,0 +1,58 @@
+[*]
+[*] GTKWave Analyzer v3.3.82 (w)1999-2017 BSI
+[*] Mon Apr 23 19:13:45 2018
+[*]
+[dumpfile] "/home/bjohan/git_wd/fpgadds/hdl/src/simulation_result.vcd"
+[dumpfile_mtime] "Mon Apr 23 19:10:48 2018"
+[dumpfile_size] 54709
+[savefile] "/home/bjohan/git_wd/fpgadds/hdl/src/sim/gtkwaves/mdio_tb.gtkw"
+[timestart] 5861000
+[size] 1889 916
+[pos] -1 -1
+*-19.733654 9375000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] phy_tb.
+[sst_width] 225
+[signals_width] 226
+[sst_expanded] 1
+[sst_vpaned_height] 424
+@200
+-sys
+@28
+phy_tb.i_mdio.clk
+phy_tb.i_mdio.reset
+@200
+-interface
+@28
+phy_tb.i_mdio.done
+phy_tb.i_mdio.rdy
+phy_tb.i_mdio.start
+@22
+#{phy_tb.i_mdio.phy_addr[4:0]} phy_tb.i_mdio.phy_addr[4] phy_tb.i_mdio.phy_addr[3] phy_tb.i_mdio.phy_addr[2] phy_tb.i_mdio.phy_addr[1] phy_tb.i_mdio.phy_addr[0]
+#{phy_tb.i_mdio.rdata[15:0]} phy_tb.i_mdio.rdata[15] phy_tb.i_mdio.rdata[14] phy_tb.i_mdio.rdata[13] phy_tb.i_mdio.rdata[12] phy_tb.i_mdio.rdata[11] phy_tb.i_mdio.rdata[10] phy_tb.i_mdio.rdata[9] phy_tb.i_mdio.rdata[8] phy_tb.i_mdio.rdata[7] phy_tb.i_mdio.rdata[6] phy_tb.i_mdio.rdata[5] phy_tb.i_mdio.rdata[4] phy_tb.i_mdio.rdata[3] phy_tb.i_mdio.rdata[2] phy_tb.i_mdio.rdata[1] phy_tb.i_mdio.rdata[0]
+@28
+#{phy_tb.i_mdio.reg_addr[4:0]} phy_tb.i_mdio.reg_addr[4] phy_tb.i_mdio.reg_addr[3] phy_tb.i_mdio.reg_addr[2] phy_tb.i_mdio.reg_addr[1] phy_tb.i_mdio.reg_addr[0]
+@22
+#{phy_tb.i_mdio.wdata[15:0]} phy_tb.i_mdio.wdata[15] phy_tb.i_mdio.wdata[14] phy_tb.i_mdio.wdata[13] phy_tb.i_mdio.wdata[12] phy_tb.i_mdio.wdata[11] phy_tb.i_mdio.wdata[10] phy_tb.i_mdio.wdata[9] phy_tb.i_mdio.wdata[8] phy_tb.i_mdio.wdata[7] phy_tb.i_mdio.wdata[6] phy_tb.i_mdio.wdata[5] phy_tb.i_mdio.wdata[4] phy_tb.i_mdio.wdata[3] phy_tb.i_mdio.wdata[2] phy_tb.i_mdio.wdata[1] phy_tb.i_mdio.wdata[0]
+@200
+-hw_if
+@28
+phy_tb.i_mdio.di
+phy_tb.i_mdio.do
+phy_tb.i_mdio.mdc
+phy_tb.i_mdio.oe
+@200
+-clk_gen
+@28
+phy_tb.i_mdio.mdc
+phy_tb.i_mdio.mdc_r
+@22
+#{phy_tb.i_mdio.tick_cnt[10:0]} phy_tb.i_mdio.tick_cnt[10] phy_tb.i_mdio.tick_cnt[9] phy_tb.i_mdio.tick_cnt[8] phy_tb.i_mdio.tick_cnt[7] phy_tb.i_mdio.tick_cnt[6] phy_tb.i_mdio.tick_cnt[5] phy_tb.i_mdio.tick_cnt[4] phy_tb.i_mdio.tick_cnt[3] phy_tb.i_mdio.tick_cnt[2] phy_tb.i_mdio.tick_cnt[1] phy_tb.i_mdio.tick_cnt[0]
+@28
+phy_tb.i_mdio.tick_neg_edge
+phy_tb.i_mdio.tick_pos_edge
+@25
+#{phy_tb.i_mdio.current_bit[5:0]} phy_tb.i_mdio.current_bit[5] phy_tb.i_mdio.current_bit[4] phy_tb.i_mdio.current_bit[3] phy_tb.i_mdio.current_bit[2] phy_tb.i_mdio.current_bit[1] phy_tb.i_mdio.current_bit[0]
+@28
+phy_tb.i_mdio.sample_tick
+[pattern_trace] 1
+[pattern_trace] 0

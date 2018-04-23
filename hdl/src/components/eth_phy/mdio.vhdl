@@ -3,7 +3,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 entity mdio is
-	generic(bits : integer := 64);
+	generic(div : integer := 8);
     	port ( 
 		reset : in STD_LOGIC;
 		clk : in  STD_LOGIC;
@@ -26,18 +26,16 @@ end mdio;
 architecture Behavioral of mdio is
 	type mdio_state is (idle, sync_write, write, sync_read, read, read_done);
 	signal state : mdio_state;
-	signal mdio : unsigned(bits -1  downto 0);
-	constant tick_div : integer := 8;
-	signal tick : std_logic;
-	signal tick_dbl : std_logic;
+	constant tick_div : integer := div;
+	signal tick_pos_edge : std_logic;
+	signal tick_neg_edge : std_logic;
 	signal mdc_r : std_logic;
-	signal mdc_rr : std_logic;
 	signal tick_cnt : unsigned(10 downto 0);
 	signal complete_word : std_logic_vector(31 downto 0);
 	signal current_bit : unsigned(5 downto 0);
 	signal rdata_r : std_logic_vector(15 downto 0);
-	signal bit_index : std_logic_vector(3 downto 0);
-
+	--signal bit_index : std_logic_vector(3 downto 0);
+	--signal sample_tick : std_logic;
 begin
 
 p_coount : process(clk)
@@ -48,6 +46,7 @@ begin
 			rdy <= '0';
 			state <= idle;
 		else
+			--sample_tick <= '0';
 			case (state) is
 				when idle =>
 				        done <= '0';	
@@ -64,18 +63,18 @@ begin
 						end if;
 					end if;
 				when sync_write =>
-					if tick = '1' then
+					if tick_pos_edge = '1' then
 						state <= write;
 					end if;
 
 				when sync_read =>
-					if tick = '1' then
+					if tick_pos_edge = '1' then
 						state <= read;
 					end if;
 
 				when write =>
 					oe <= '1';
-					if tick = '1' then
+					if tick_pos_edge = '1' then
 						do <= complete_word(31-to_integer(current_bit));
 						current_bit <= current_bit + 1;
 						if current_bit = x"1F" then
@@ -85,17 +84,20 @@ begin
 					end if;
 				when read =>
 					oe <= '1';
-					if current_bit > 11 then
+					if current_bit > 13 then
 						oe <= '0';
 					end if;
 
-					if tick = '1' then
-						if current_bit > 15 then
+					if current_bit > 15 then
+						if tick_neg_edge = '1' then 
+							--sample_tick <= '1';
 							rdata_r( to_integer(current_bit(3 downto 0))) <= di;
-							bit_index <= std_logic_vector(current_bit(3 downto 0));
-						else
-							do <= complete_word(31-to_integer(current_bit));
+							--bit_index <= std_logic_vector(current_bit(3 downto 0));
 						end if;
+					else
+						do <= complete_word(31-to_integer(current_bit));
+					end if;
+					if tick_pos_edge = '1' then
 						current_bit <= current_bit + 1;
 						if current_bit = x"1F" then
 							state <= read_done;
@@ -110,43 +112,33 @@ begin
 	end if;
 end process;
 
-p_tick : process(clk) 
+
+p_clkgen : process(clk)
 begin
 	if rising_edge(clk) then
-		if reset = '1' then
-			tick_cnt <= (others => '0');
-			tick_dbl <= '0';
-		else
-			if state = idle then
-				tick_cnt <= (others => '0');
-			else 
-				tick_cnt <= tick_cnt +1;
-				tick_dbl <= '0';
-				if tick_cnt = tick_div -1 then
-					tick_cnt <= (others => '0');
-				tick_dbl <= '1';
-				end if;	
-			end if;	
-		end if;
-	end if;
-end process;
-	
-p_mdc : process(clk)
-begin
-	if rising_edge(clk) then
-		tick <= '0';
-		if tick_dbl = '1' then
+	if reset = '1' then
+		mdc_r <=  '0';
+		tick_cnt <= to_unsigned(tick_div, 11);
+	else
+		tick_neg_edge <= '0';
+		tick_pos_edge <= '0';
+
+		tick_cnt <= tick_cnt -1;	
+		if tick_cnt = 0 then
+			tick_cnt <= to_unsigned(tick_div, 11);
 			if mdc_r = '1' then
-				tick <= '1';
 				mdc_r <= '0';
+				tick_neg_edge <= '1';
 			else
 				mdc_r <= '1';
+				tick_pos_edge <= '1';
 			end if;
 		end if;
-		mdc_rr <= mdc_r;
+	end if;
 	end if;
 end process;
+
 	
-mdc <= mdc_rr;
+mdc <= mdc_r;
 end Behavioral;
 

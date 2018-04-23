@@ -11,7 +11,7 @@ architecture Behavioral of phy_tb is
 --           led1 : out  STD_LOGIC);
 --end component;
 component mdio
-	generic(bits : integer := 64);
+	generic(div : integer := 8);
     	port ( 
 		reset : in STD_LOGIC;
 		clk : in  STD_LOGIC;
