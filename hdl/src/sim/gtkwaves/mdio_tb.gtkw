@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.82 (w)1999-2017 BSI
-[*] Mon Apr 23 19:13:45 2018
+[*] Wed Apr 25 18:18:43 2018
 [*]
 [dumpfile] "/home/bjohan/git_wd/fpgadds/hdl/src/simulation_result.vcd"
-[dumpfile_mtime] "Mon Apr 23 19:10:48 2018"
-[dumpfile_size] 54709
+[dumpfile_mtime] "Wed Apr 25 18:18:21 2018"
+[dumpfile_size] 57312
 [savefile] "/home/bjohan/git_wd/fpgadds/hdl/src/sim/gtkwaves/mdio_tb.gtkw"
-[timestart] 5861000
+[timestart] 11900300
 [size] 1889 916
 [pos] -1 -1
-*-19.733654 9375000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-14.979269 12100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] phy_tb.
 [sst_width] 225
 [signals_width] 226
@@ -50,9 +50,31 @@ phy_tb.i_mdio.mdc_r
 @28
 phy_tb.i_mdio.tick_neg_edge
 phy_tb.i_mdio.tick_pos_edge
-@25
+@24
 #{phy_tb.i_mdio.current_bit[5:0]} phy_tb.i_mdio.current_bit[5] phy_tb.i_mdio.current_bit[4] phy_tb.i_mdio.current_bit[3] phy_tb.i_mdio.current_bit[2] phy_tb.i_mdio.current_bit[1] phy_tb.i_mdio.current_bit[0]
 @28
-phy_tb.i_mdio.sample_tick
+phy_tb.i_rmii_tx.clk
+phy_tb.i_rmii_tx.reset
+@22
+#{phy_tb.i_rmii_tx.s_data[7:0]} phy_tb.i_rmii_tx.s_data[7] phy_tb.i_rmii_tx.s_data[6] phy_tb.i_rmii_tx.s_data[5] phy_tb.i_rmii_tx.s_data[4] phy_tb.i_rmii_tx.s_data[3] phy_tb.i_rmii_tx.s_data[2] phy_tb.i_rmii_tx.s_data[1] phy_tb.i_rmii_tx.s_data[0]
+#{phy_tb.i_rmii_tx.s_data_int[7:0]} phy_tb.i_rmii_tx.s_data_int[7] phy_tb.i_rmii_tx.s_data_int[6] phy_tb.i_rmii_tx.s_data_int[5] phy_tb.i_rmii_tx.s_data_int[4] phy_tb.i_rmii_tx.s_data_int[3] phy_tb.i_rmii_tx.s_data_int[2] phy_tb.i_rmii_tx.s_data_int[1] phy_tb.i_rmii_tx.s_data_int[0]
+@28
+phy_tb.i_rmii_tx.s_ready
+phy_tb.i_rmii_tx.s_ready_int
+phy_tb.i_rmii_tx.s_valid
+phy_tb.i_rmii_tx.tx_dv
+#{phy_tb.i_rmii_tx.txd[1:0]} phy_tb.i_rmii_tx.txd[1] phy_tb.i_rmii_tx.txd[0]
+@200
+-RX
+@28
+phy_tb.i_rmii_rx.crs
+@23
+#{phy_tb.i_rmii_rx.m_data[7:0]} phy_tb.i_rmii_rx.m_data[7] phy_tb.i_rmii_rx.m_data[6] phy_tb.i_rmii_rx.m_data[5] phy_tb.i_rmii_rx.m_data[4] phy_tb.i_rmii_rx.m_data[3] phy_tb.i_rmii_rx.m_data[2] phy_tb.i_rmii_rx.m_data[1] phy_tb.i_rmii_rx.m_data[0]
+@22
+#{phy_tb.i_rmii_rx.m_data_int[7:0]} phy_tb.i_rmii_rx.m_data_int[5] phy_tb.i_rmii_rx.m_data_int[4] phy_tb.i_rmii_rx.m_data_int[3] phy_tb.i_rmii_rx.m_data_int[2] phy_tb.i_rmii_rx.m_data_int[1] phy_tb.i_rmii_rx.m_data_int[0]
+@28
+phy_tb.i_rmii_rx.m_valid
+#{phy_tb.i_rmii_rx.rxd[1:0]} phy_tb.i_rmii_rx.rxd[1] phy_tb.i_rmii_rx.rxd[0]
+phy_tb.i_rmii_rx.s_ready_int
 [pattern_trace] 1
 [pattern_trace] 0

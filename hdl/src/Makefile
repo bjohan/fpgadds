@@ -12,6 +12,8 @@ VHDLS = dds_papilio_pro_top_str.vhd\
 	components/dds/lut_interp.vhdl\
 	components/dds/folder.vhdl\
 	components/dds/dds_tb.vhdl\
+	components/eth_phy/rmii_tx.vhdl\
+	components/eth_phy/rmii_rx.vhdl\
 	components/eth_phy/mdio.vhdl\
 	components/eth_phy/phy_tb.vhdl\
 	ip/pll/clk_wiz_v3_6.vhd
