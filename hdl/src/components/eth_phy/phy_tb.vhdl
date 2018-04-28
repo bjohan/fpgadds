@@ -22,6 +22,7 @@ component mdio
 		rw	 : in std_logic;
 		start    : in std_logic;
 		rdy	 : out std_logic;
+		mdc	 : out std_logic;
 		done	 : out std_logic;
 		do	 : out std_logic;
 		di	 : in std_logic;
@@ -95,7 +96,7 @@ begin
 
 di <= '1';
 clk <= not clk after 5 ns when (run = '1' and test_stop = '0') else '0';
-run <= '0' after 3000 us;
+--run <= '0' after 3000 us;
 reset <= '0' after 100 ns;
 
 clk_eth <= not clk_eth after 10 ns when (run = '1' and test_stop = '0') else '0';
@@ -133,6 +134,7 @@ i_mdio : mdio
 		start => start,
 		rdy => rdy,
 		done => done,
+		mdc => open,
 		do => do,
 		di => di,
 		oe => oe
@@ -225,6 +227,7 @@ i_mdio : mdio
 						end if;
 
 					when test_done =>
+					       --report "simulation ended" severity warning;
 					       test_stop <= '1';	
 				end case;
 			end if;
