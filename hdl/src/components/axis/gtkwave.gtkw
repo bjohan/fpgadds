@@ -1,0 +1,76 @@
+[*]
+[*] GTKWave Analyzer v3.3.82 (w)1999-2017 BSI
+[*] Mon Apr 30 10:20:37 2018
+[*]
+[dumpfile] "/home/bjohan/git_wd/fpgadds/hdl/src/components/axis/axis_tb.fst"
+[dumpfile_mtime] "Mon Apr 30 10:19:41 2018"
+[dumpfile_size] 1121
+[savefile] "/home/bjohan/git_wd/fpgadds/hdl/src/components/axis/gtkwave.gtkw"
+[timestart] 111500000
+[size] 1853 1025
+[pos] -1 -1
+*-25.249506 222300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 351
+[signals_width] 365
+[sst_expanded] 1
+[sst_vpaned_height] 303
+@28
+reset
+clk
+test_state
+test_stop
+@200
+-TRX control
+@22
+tx_data[31:0]
+@28
+tx_start
+@200
+-p_transmit
+@22
+tx_data[31:0]
+s_data[31:0]
+@28
+s_valid
+s_last
+s_ready
+@29
+tx_done
+@200
+-p_receive
+@22
+rx_beats_left[31:0]
+@28
+rx_control_state
+@22
+rx_data[31:0]
+@28
+rx_done
+rx_ready
+rx_start
+@22
+beats_to_rx[31:0]
+@200
+-axis_reg
+@22
+i_axis_reg.s_data[31:0]
+@28
+i_axis_reg.s_last
+i_axis_reg.s_ready
+i_axis_reg.s_ready_int
+i_axis_reg.s_valid
+@22
+i_axis_reg.m_data[31:0]
+@28
+i_axis_reg.m_last
+i_axis_reg.m_ready
+i_axis_reg.m_valid
+i_axis_reg.m_valid_int
+i_axis_reg.beat_in
+i_axis_reg.beat_out
+@22
+i_axis_reg.stored[31:0]
+@28
+i_axis_reg.stored_valid
+[pattern_trace] 1
+[pattern_trace] 0
