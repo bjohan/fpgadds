@@ -3,19 +3,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 entity axis_reg is
-	generic(g_width : natural := 4);
+	generic(g_width_bits : natural := 32);
     	port ( 
 		reset : in STD_LOGIC;
 		clk : in  STD_LOGIC;
 
 		--output
-		m_data : out std_logic_vector(g_width*8-1 downto 0);
+		m_data : out std_logic_vector(g_width_bits-1 downto 0);
 		m_valid : out std_logic;
 		m_last : out std_logic;
 		m_ready : in std_logic;
 
 		--input
-		s_data : in std_logic_vector(g_width*8-1 downto 0);
+		s_data : in std_logic_vector(g_width_bits-1 downto 0);
 		s_valid : in std_logic;
 		s_last : in std_logic;
 		s_ready : out std_logic
@@ -30,7 +30,7 @@ architecture Behavioral of axis_reg is
 	--signal m_data_int : std_logic_vector(5 downto 0);
 	signal beat_in : std_logic;
 	signal beat_out : std_logic;
-	signal stored : std_logic_vector(8*g_width -1 downto 0);
+	signal stored : std_logic_vector(g_width_bits -1 downto 0);
 	signal stored_valid : std_logic;
 	signal s_ready_int : std_logic;
 	signal m_valid_int : std_logic;

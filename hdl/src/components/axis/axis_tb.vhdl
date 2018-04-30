@@ -8,19 +8,19 @@ end axis_tb;
 architecture Behavioral of axis_tb is
 
 component axis_reg is
-	generic (g_width : natural := 4);
+	generic (g_width_bits : natural := 31);
     	port ( 
 		reset : in STD_LOGIC;
 		clk : in  STD_LOGIC;
 
 		--input
-		m_data : out std_logic_vector(g_width*8-1 downto 0);
+		m_data : out std_logic_vector(g_width_bits-1 downto 0);
 		m_valid : out std_logic;
 		m_last : out std_logic;
 		m_ready : in std_logic;
 
 		--input
-		s_data : in std_logic_vector(g_width*8-1 downto 0);
+		s_data : in std_logic_vector(g_width_bits-1 downto 0);
 		s_valid : in std_logic;
 		s_last : in std_logic;
 		s_ready : out std_logic
@@ -28,7 +28,24 @@ component axis_reg is
            	);
 end component;
 
+component axis_serializer is
+	generic(g_width_bits : natural := 32; g_parallell_width_bits : natural := 124);
+    	port ( 
+		reset : in STD_LOGIC;
+		clk : in  STD_LOGIC;
 
+		s_in : in std_logic_vector(g_parallell_width_bits -1 downto 0);
+		s_valid : in std_logic;
+		s_ready : out std_logic;
+
+		--output
+		m_data : out std_logic_vector(g_width_bits-1 downto 0);
+		m_valid : out std_logic;
+		m_last : out std_logic;
+		m_keep : out std_logic_vector(g_width_bits-1 downto 0);
+		m_ready : in std_logic
+           	);
+end component;
 
 
 type test_states is(test_start, test_end_delay, tx_test_1, tx_test_1_wait_done, rx_last, test_done);
@@ -80,8 +97,27 @@ begin
 clk <= not clk after 5 ns when (test_stop = '0') else '0';
 reset <= '0' after 100 ns;
 
+i_axis_serializer : axis_serializer
+	generic map(g_width_bits => 16, g_parallell_width_bits => 40)
+    	port map( 
+		reset => reset,
+		clk => clk,
+
+		s_in => x"9876543210",
+		s_valid =>'1',
+		s_ready => open,
+
+		--output
+		m_data => open,
+		m_valid => open,
+		m_last => open,
+		m_keep => open,
+		m_ready => '1'
+           	);
+
+
 i_axis_reg : axis_reg
-	generic map(g_width=>4)
+	generic map(g_width_bits=>32)
 	port map(
 		reset => reset,
 		clk => clk,
