@@ -19,7 +19,7 @@ entity axis_mux is
 		--output
 		m_data : out std_logic_vector(g_width_bits-1 downto 0);
 		m_valid : out std_logic;
-		m_ready : in std_logic;
+		m_ready : in std_logic
            	);
 end axis_mux;
 

@@ -7,45 +7,45 @@ end axis_tb;
 
 architecture Behavioral of axis_tb is
 
-component axis_reg is
-	generic (g_width_bits : natural := 31);
-    	port ( 
-		reset : in STD_LOGIC;
-		clk : in  STD_LOGIC;
+--component axis_reg is
+--	generic (g_width_bits : natural := 31);
+--    	port ( 
+--		reset : in STD_LOGIC;
+--		clk : in  STD_LOGIC;
+--
+--		--input
+--		m_data : out std_logic_vector(g_width_bits-1 downto 0);
+--		m_valid : out std_logic;
+--		m_last : out std_logic;
+--		m_ready : in std_logic;
+--
+--		--input
+--		s_data : in std_logic_vector(g_width_bits-1 downto 0);
+--		s_valid : in std_logic;
+--		s_last : in std_logic;
+--		s_ready : out std_logic
+--
+--           	);
+--end component;
 
-		--input
-		m_data : out std_logic_vector(g_width_bits-1 downto 0);
-		m_valid : out std_logic;
-		m_last : out std_logic;
-		m_ready : in std_logic;
-
-		--input
-		s_data : in std_logic_vector(g_width_bits-1 downto 0);
-		s_valid : in std_logic;
-		s_last : in std_logic;
-		s_ready : out std_logic
-
-           	);
-end component;
-
-component axis_serializer is
-	generic(g_width_bits : natural := 32; g_parallell_width_bits : natural := 124);
-    	port ( 
-		reset : in STD_LOGIC;
-		clk : in  STD_LOGIC;
-
-		s_in : in std_logic_vector(g_parallell_width_bits -1 downto 0);
-		s_valid : in std_logic;
-		s_ready : out std_logic;
-
-		--output
-		m_data : out std_logic_vector(g_width_bits-1 downto 0);
-		m_valid : out std_logic;
-		m_last : out std_logic;
-		m_keep : out std_logic_vector(g_width_bits-1 downto 0);
-		m_ready : in std_logic
-           	);
-end component;
+--component axis_serializer is
+--	generic(g_width_bits : natural := 32; g_parallell_width_bits : natural := 124);
+--    	port ( 
+--		reset : in STD_LOGIC;
+--		clk : in  STD_LOGIC;
+--
+--		s_in : in std_logic_vector(g_parallell_width_bits -1 downto 0);
+--		s_valid : in std_logic;
+--		s_ready : out std_logic;
+--
+--		--output
+--		m_data : out std_logic_vector(g_width_bits-1 downto 0);
+--		m_valid : out std_logic;
+--		m_last : out std_logic;
+--		m_keep : out std_logic_vector(g_width_bits-1 downto 0);
+--		m_ready : in std_logic
+--           	);
+--end component;
 
 
 type test_states is(test_start, test_end_delay, tx_test_1, tx_test_1_wait_done, rx_last, test_done);
@@ -97,7 +97,7 @@ begin
 clk <= not clk after 5 ns when (test_stop = '0') else '0';
 reset <= '0' after 100 ns;
 
-i_axis_serializer : axis_serializer
+i_axis_serializer : entity work.axis_serializer(behavioral)
 	generic map(g_width_bits => 16, g_parallell_width_bits => 40)
     	port map( 
 		reset => reset,
@@ -116,7 +116,7 @@ i_axis_serializer : axis_serializer
            	);
 
 
-i_axis_reg : axis_reg
+i_axis_reg : entity work.axis_reg(behavioral)
 	generic map(g_width_bits=>32)
 	port map(
 		reset => reset,
