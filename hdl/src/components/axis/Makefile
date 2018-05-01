@@ -1,5 +1,5 @@
 TARGET = axis_tb
-SRC = $(wildcard *.vhd) $(wildcard *.vhdl)
+SRC = $(wildcard component_*.vhd) $(wildcard component_*.vhdl) $(wildcard *_tb.vhdl) $(wildcard *_tb.vhd)
 
 
 view:$(TARGET).fst
