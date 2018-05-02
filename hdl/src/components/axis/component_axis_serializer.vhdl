@@ -52,6 +52,7 @@ begin
 		if reset = '1' then
 			s_ready_int <= '0';
 			m_valid_int <= '0';
+			m_last <= '0';
 		else
 			debug <= to_unsigned(current_word,32);
 			case(serializer_state) is 
@@ -68,7 +69,7 @@ begin
 					end if;	
 
 				when transmit =>
-					report "low bit is " & integer'image(low_bit);
+					--report "low bit is " & integer'image(low_bit);
 					if beat_out = '1' then
 						if current_word < num_words then
 							current_word <= current_word +1;

@@ -7,47 +7,6 @@ end axis_tb;
 
 architecture Behavioral of axis_tb is
 
---component axis_reg is
---	generic (g_width_bits : natural := 31);
---    	port ( 
---		reset : in STD_LOGIC;
---		clk : in  STD_LOGIC;
---
---		--input
---		m_data : out std_logic_vector(g_width_bits-1 downto 0);
---		m_valid : out std_logic;
---		m_last : out std_logic;
---		m_ready : in std_logic;
---
---		--input
---		s_data : in std_logic_vector(g_width_bits-1 downto 0);
---		s_valid : in std_logic;
---		s_last : in std_logic;
---		s_ready : out std_logic
---
---           	);
---end component;
-
---component axis_serializer is
---	generic(g_width_bits : natural := 32; g_parallell_width_bits : natural := 124);
---    	port ( 
---		reset : in STD_LOGIC;
---		clk : in  STD_LOGIC;
---
---		s_in : in std_logic_vector(g_parallell_width_bits -1 downto 0);
---		s_valid : in std_logic;
---		s_ready : out std_logic;
---
---		--output
---		m_data : out std_logic_vector(g_width_bits-1 downto 0);
---		m_valid : out std_logic;
---		m_last : out std_logic;
---		m_keep : out std_logic_vector(g_width_bits-1 downto 0);
---		m_ready : in std_logic
---           	);
---end component;
-
-
 type test_states is(test_start, test_end_delay, tx_test_1, tx_test_1_wait_done, rx_last, test_done);
 type tx_control_states is (tx_control_idle, tx_control_transmit);
 type rx_control_states is (rx_control_idle, rx_control_receive);
@@ -91,13 +50,27 @@ signal s_valid 	: std_logic;
 signal s_last 	: std_logic;
 signal s_ready 	: std_logic;
 
+--serializer signals
+signal s1_to_p_data : std_logic_vector(15 downto 0);
+signal s1_to_p_keep : std_logic_vector(15 downto 0);
+signal s1_to_p_valid : std_logic;
+signal s1_to_p_last : std_logic;
+signal s1_to_p_ready : std_logic;
+
+signal s2_to_p_data : std_logic_vector(15 downto 0);
+signal s2_to_p_keep : std_logic_vector(15 downto 0);
+signal s2_to_p_valid : std_logic;
+signal s2_to_p_last : std_logic;
+signal s2_to_p_ready : std_logic;
+
+
 begin
 
 
 clk <= not clk after 5 ns when (test_stop = '0') else '0';
 reset <= '0' after 100 ns;
 
-i_axis_serializer : entity work.axis_serializer(behavioral)
+i_axis_serializer1 : entity work.axis_serializer(behavioral)
 	generic map(g_width_bits => 16, g_parallell_width_bits => 40)
     	port map( 
 		reset => reset,
@@ -108,12 +81,59 @@ i_axis_serializer : entity work.axis_serializer(behavioral)
 		s_ready => open,
 
 		--output
+		m_data => s1_to_p_data,
+		m_valid => s1_to_p_valid,
+		m_last => s1_to_p_last,
+		m_keep => s1_to_p_keep,
+		m_ready => s1_to_p_ready
+           	);
+
+i_axis_serializer2 : entity work.axis_serializer(behavioral)
+	generic map(g_width_bits => 16, g_parallell_width_bits => 44)
+    	port map( 
+		reset => reset,
+		clk => clk,
+
+		s_in => x"a9876543210",
+		s_valid =>'1',
+		s_ready => open,
+
+		--output
+		m_data => s2_to_p_data,
+		m_valid => s2_to_p_valid,
+		m_last => s2_to_p_last,
+		m_keep => s2_to_p_keep,
+		m_ready => s2_to_p_ready
+           	);
+
+i_axis_packet_join : entity work. axis_packet_join(behavioral)
+	generic map(g_width_bits => 16)
+    	port map( 
+		reset => reset,
+		clk => clk,
+
+		--input 1
+		s_data1 => s1_to_p_data, 
+		s_keep1 => s1_to_p_keep,
+		s_valid1 => s1_to_p_valid,
+		s_last1 => s1_to_p_last,
+		s_ready1 => s1_to_p_ready,
+
+		--input 2
+		s_data2 => s2_to_p_data, 
+		s_keep2 => s2_to_p_keep, 
+		s_valid2 => s2_to_p_valid, 
+		s_last2 => s2_to_p_last, 
+		s_ready2 => s2_to_p_ready, 
+
+		--output
 		m_data => open,
+		m_keep => open,
 		m_valid => open,
 		m_last => open,
-		m_keep => open,
 		m_ready => '1'
            	);
+
 
 
 i_axis_reg : entity work.axis_reg(behavioral)

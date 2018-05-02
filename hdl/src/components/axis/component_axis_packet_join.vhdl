@@ -29,6 +29,7 @@ entity axis_packet_join is
 		m_last : out std_logic;
 		m_ready : in std_logic
            	);
+
 end axis_packet_join;
 
 architecture Behavioral of axis_packet_join is
@@ -57,10 +58,14 @@ end function count_keeps;
 
 signal m_valid_int : std_logic;
 begin
+
 i_mux: entity work.axis_mux(Behavioral)
-	generic map (g_width_bits => 32)
+	generic map (g_width_bits => g_width_bits)
 	port map( 
+
+
 		sel => '0',
+
 		s_data0 => s_data1,
 		s_valid0 => s_valid1,
 		s_ready0 => s_ready1,
@@ -72,8 +77,8 @@ i_mux: entity work.axis_mux(Behavioral)
 		m_ready =>m_ready
            	);
 
-s_ready1 <= s_ready1_int;
-s_ready2 <= s_ready2_int;
+--s_ready1 <= s_ready1_int and not s_last1;
+--s_ready2 <= s_ready2_int;
 
 beat_in1 <= s_valid1 and s_ready1_int;
 beat_in2 <= s_valid2 and s_ready2_int;
@@ -96,7 +101,7 @@ begin
 			case (packet_join_state) is
 				when idle =>
 					if s_valid1 = '1' and s_valid2 = '1' then --wait for both packets to start
-						s_ready1 <= '1';
+						--s_ready1 <= '1';
 						packet_join_state <= head;
 					end if;
 				when head =>
