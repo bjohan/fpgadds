@@ -136,7 +136,22 @@ i_axis_serializer2 : entity work.axis_serializer(behavioral)
 		m_keep => s2_to_p_keep,
 		m_ready => s2_to_p_ready
            	);
-s2_to_p_ready <= '1';
+--s2_to_p_ready <= '1';
+
+i_axis_deserializer2 : entity work.axis_deserializer(behavioral)
+	generic map(g_axis_words => 4, g_parallell_words => 11, g_word_bits => 4)
+	port map(
+		reset => reset,
+		clk => clk,
+		
+		m_ready => '1',
+
+		s_data => s2_to_p_data,
+		s_valid => s2_to_p_valid,
+		s_last => s2_to_p_last,
+		s_keep => s2_to_p_keep,
+		s_ready => s2_to_p_ready
+		);
 --i_axis_packet_join : entity work. axis_packet_join(behavioral)
 --	generic map(g_width_bits => 16)
 --    	port map( 
