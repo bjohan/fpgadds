@@ -52,16 +52,24 @@ signal s_ready 	: std_logic;
 
 --serializer signals
 signal s1_to_p_data : std_logic_vector(15 downto 0);
-signal s1_to_p_keep : std_logic_vector(15 downto 0);
+signal s1_to_p_keep : std_logic_vector(3 downto 0);
 signal s1_to_p_valid : std_logic;
 signal s1_to_p_last : std_logic;
 signal s1_to_p_ready : std_logic;
 
 signal s2_to_p_data : std_logic_vector(15 downto 0);
-signal s2_to_p_keep : std_logic_vector(15 downto 0);
+signal s2_to_p_keep : std_logic_vector(3 downto 0);
 signal s2_to_p_valid : std_logic;
 signal s2_to_p_last : std_logic;
 signal s2_to_p_ready : std_logic;
+
+
+--serializer to deserializer
+signal s_to_d_data : std_logic_vector(15 downto 0);
+signal s_to_d_keep : std_logic_vector(15 downto 0);
+signal s_to_d_valid : std_logic;
+signal s_to_d_last : std_logic;
+signal s_to_d_ready : std_logic;
 
 
 begin
@@ -71,12 +79,12 @@ clk <= not clk after 5 ns when (test_stop = '0') else '0';
 reset <= '0' after 100 ns;
 
 i_axis_serializer1 : entity work.axis_serializer(behavioral)
-	generic map(g_width_bits => 16, g_parallell_width_bits => 40)
+	generic map(g_axis_words => 4, g_parallell_words => 9, g_word_bits=>4)
     	port map( 
 		reset => reset,
 		clk => clk,
 
-		s_in => x"9876543210",
+		s_in => x"876543210",
 		s_valid =>'1',
 		s_ready => open,
 
@@ -88,8 +96,31 @@ i_axis_serializer1 : entity work.axis_serializer(behavioral)
 		m_ready => s1_to_p_ready
            	);
 
+i_axis_realigner : entity work.axis_realigner(behavioral)
+	generic map(g_axis_words => 4, g_word_bits=>4)
+    	port map( 
+		reset => reset,
+		clk => clk,
+
+		extra_keep => "1111",
+		extra_data => x"CDEF",
+
+		m_data => open,
+		m_valid => open,
+		m_last => open,
+		m_ready => '1',
+
+		--input
+		s_data => s1_to_p_data,
+		s_valid => s1_to_p_valid,
+		s_last => s1_to_p_last,
+		s_keep => s1_to_p_keep,
+		s_ready => s1_to_p_ready
+           	);
+
+
 i_axis_serializer2 : entity work.axis_serializer(behavioral)
-	generic map(g_width_bits => 16, g_parallell_width_bits => 44)
+	generic map(g_axis_words => 4, g_parallell_words => 11, g_word_bits => 4)
     	port map( 
 		reset => reset,
 		clk => clk,
@@ -105,34 +136,34 @@ i_axis_serializer2 : entity work.axis_serializer(behavioral)
 		m_keep => s2_to_p_keep,
 		m_ready => s2_to_p_ready
            	);
-
-i_axis_packet_join : entity work. axis_packet_join(behavioral)
-	generic map(g_width_bits => 16)
-    	port map( 
-		reset => reset,
-		clk => clk,
-
-		--input 1
-		s_data1 => s1_to_p_data, 
-		s_keep1 => s1_to_p_keep,
-		s_valid1 => s1_to_p_valid,
-		s_last1 => s1_to_p_last,
-		s_ready1 => s1_to_p_ready,
-
-		--input 2
-		s_data2 => s2_to_p_data, 
-		s_keep2 => s2_to_p_keep, 
-		s_valid2 => s2_to_p_valid, 
-		s_last2 => s2_to_p_last, 
-		s_ready2 => s2_to_p_ready, 
-
-		--output
-		m_data => open,
-		m_keep => open,
-		m_valid => open,
-		m_last => open,
-		m_ready => '1'
-           	);
+s2_to_p_ready <= '1';
+--i_axis_packet_join : entity work. axis_packet_join(behavioral)
+--	generic map(g_width_bits => 16)
+--    	port map( 
+--		reset => reset,
+--		clk => clk,
+--
+--		--input 1
+--		s_data1 => s1_to_p_data, 
+--		s_keep1 => s1_to_p_keep,
+--		s_valid1 => s1_to_p_valid,
+--		s_last1 => s1_to_p_last,
+--		s_ready1 => s1_to_p_ready,
+--
+--		--input 2
+--		s_data2 => s2_to_p_data, 
+--		s_keep2 => s2_to_p_keep, 
+--		s_valid2 => s2_to_p_valid, 
+--		s_last2 => s2_to_p_last, 
+--		s_ready2 => s2_to_p_ready, 
+--
+--		--output
+--		m_data => open,
+--		m_keep => open,
+--		m_valid => open,
+--		m_last => open,
+--		m_ready => '1'
+--           	);
 
 
 

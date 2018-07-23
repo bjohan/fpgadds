@@ -2,8 +2,11 @@ TARGET = axis_tb
 SRC = $(wildcard component_*.vhd) $(wildcard component_*.vhdl) $(wildcard *_tb.vhdl) $(wildcard *_tb.vhd)
 
 
-view:$(TARGET).fst
-	gtkwave $(TARGET).fst wave.gtkw
+view:$(TARGET).ghw
+	gtkwave $(TARGET).ghw wave.gtkw
+
+$(TARGET).ghw: $(TARGET)
+	./$(TARGET) --wave=$(TARGET).ghw --stop-time=30us
 
 $(TARGET).fst: $(TARGET)
 	./$(TARGET) --fst=$(TARGET).fst --stop-time=30us
