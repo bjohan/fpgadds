@@ -34,34 +34,28 @@ entity axis_realigner is
 end axis_realigner;
 
 architecture Behavioral of axis_realigner is
-	signal first : std_logic;
+
+	type aligner_states is (idle, first_data, data, transfer_remaining, last_beat);
+
+	type word_vector is array (g_axis_words-1 downto 0) of std_logic_vector(g_word_bits-1 downto 0);
+	
+	signal aligner_state : aligner_states;
 	signal beat : std_logic;
-	signal extra_beat : std_logic;
-	signal extra : std_logic;
-	signal extra_r : std_logic;
-	signal last_data : std_logic_vector(g_axis_words*g_word_bits-1 downto 0);
-	signal last_keep : std_logic_Vector(g_axis_words-1 downto 0);
-	
-	signal num_extra_keeps : natural;
-	signal num_input_keeps : natural;
+	--signal word_reg : word_vector;
+	signal delay_reg : word_vector;
+	signal s_data_wv : word_vector;
+	signal extra_data_wv : word_vector;
+	signal delay_keep : std_logic_vector(g_axis_words-1 downto 0);
+	constant zero_keep : std_logic_vector(g_axis_words-1 downto 0) := (others => '0');
 
-	signal delayed_keep : std_logic_vector(g_axis_words-1 downto 0);
-	signal dly_keep : natural;
-	signal direct_keep : natural;
-	
-	signal delayed_data : std_logic_vector(g_axis_words*g_word_bits-1 downto 0);
-	signal dly_data : natural;
-	signal direct_data : natural;
-	
-	signal data : std_logic_vector(g_axis_words*g_word_bits-1 downto 0);
-	signal keep : std_logic_vector(g_axis_words-1 downto 0);
-	
-	signal debug_dly_keep : unsigned(31 downto 0);
-	signal debug_direct_keep : unsigned(31 downto 0);
-	signal debug_dly_data : unsigned(31 downto 0);
-	signal debug_direct_data : unsigned(31 downto 0);
-
-	constant zeros : std_logic_vector(g_axis_words*g_word_bits-1 downto 0) := (others => '0');
+	signal direct_words : natural range 0 to g_axis_words;
+	signal extra_words : natural range 0 to g_axis_words;
+	signal last_keep : natural range 0 to g_axis_words;
+	signal offset : natural range 0 to g_axis_words;
+	signal remaining_words : natural range 0 to g_axis_words;
+	signal m_last_int : std_logic;
+	signal transfer : std_logic;
+	signal s_ready_int : std_logic;
 
 	function count_keeps(keep : std_logic_vector) return integer is
 	variable cnt : natural := 0;
@@ -77,69 +71,207 @@ architecture Behavioral of axis_realigner is
 	end function count_keeps;
 
 
+	function word_vector_from_stdlv(stdlv : std_logic_vector; words : natural) return word_vector is
+	variable wv : word_vector;
+	begin
+	for i in 0 to words-1 loop
+		wv(i) := stdlv((i+1)*g_word_bits-1 downto i*g_word_bits);
+	end loop;
+  	return wv;
+	end function word_vector_from_stdlv;
+
+
+	function stdlv_from_word_vector(words : word_vector) return std_logic_vector is
+	variable o : std_logic_vector(g_axis_words*g_word_bits-1 downto 0);
+	begin
+		for i in 0 to g_axis_words -1 loop
+			o((i+1)*g_word_bits-1 downto i*g_word_bits) := words(i);
+		end loop;
+		return o;
+	end function stdlv_from_word_vector;
+
+	function merge_wv(left : word_vector ; right : word_vector ; nright : natural) return word_vector is
+	variable o : word_vector;
+	begin
+		if nright = 0 then
+			o := left;
+		elsif nright > 0 and nright < g_axis_words then
+			o(nright-1 downto 0) := right(nright-1 downto 0);
+			o(g_axis_words-1 downto nright) := left(g_axis_words-nright-1 downto 0);
+		elsif nright = g_axis_words then
+			o := right;
+		else
+			assert false report "error in merge word vector" severity note;
+		end if;
+		return o;
+	end function merge_wv;
+
+	function join_wv(direct : word_vector ; delay : word_vector ; ndirect : natural) return word_vector is
+	variable o : word_vector;
+	variable ndelay : natural;
+	begin
+		ndelay := g_axis_words-ndirect;
+		if ndirect = 0 then
+			o := delay;
+		elsif ndirect > 0 and ndirect < g_axis_words then
+			o(g_axis_words-1 downto g_axis_words-1-(ndirect-1)) := direct(ndirect-1 downto 0);
+			o((ndelay)-1 downto 0) := delay(g_axis_words-1 downto g_axis_words-1 - (ndelay-1));
+		elsif ndirect = g_axis_words then
+			o := direct;
+		else
+			assert false report "error in merge word vector" severity note;
+		end if;
+		return o;
+	end function join_wv;
+
+	function output_last_data(delayed : word_vector ; direct_words : natural ; last_beat : natural) return word_vector is
+	variable o : word_vector;
+	variable last_words : natural;
+	begin
+		last_words := last_beat-direct_words;
+		o(last_words-1 downto 0) := delayed(last_words+direct_words-1 downto last_words);
+		return o;
+	end function output_last_data;
+
+
+	
+
+	function merge_keep(left : std_logic_vector ; right : std_logic_vector ; nright : natural) return std_logic_vector is
+	variable o : std_logic_vector(g_axis_words-1 downto 0);
+	begin
+		if nright = 0 then
+			o := left;
+		elsif nright > 0 and nright < g_axis_words then
+			o(nright-1 downto 0) := right(nright-1 downto 0);
+			o(g_axis_words-1 downto nright) := left(g_axis_words-nright-1 downto 0);
+		elsif nright = g_axis_words then
+			o := right;
+		else
+			assert false report "error in merge word vector" severity note;
+		end if;
+		return o;
+	end function merge_keep;
+
+	function join_keep(direct : std_logic_vector ; delay : std_logic_vector ; ndirect : natural) return std_logic_vector is
+	variable o : std_logic_vector(g_axis_words-1 downto 0);
+	variable ndelay : natural;
+	begin
+		ndelay := g_axis_words-ndirect;
+		if ndirect = 0 then
+			o := delay;
+		elsif ndirect > 0 and ndirect < g_axis_words then
+			o(g_axis_words-1 downto g_axis_words-1-(ndirect-1)) := direct(ndirect-1 downto 0);
+			o((ndelay)-1 downto 0) := delay(g_axis_words-1 downto g_axis_words-1 - (ndelay-1));
+		elsif ndirect = g_axis_words then
+			o := direct;
+		else
+			assert false report "error in merge word vector" severity note;
+		end if;
+		return o;
+	end function join_keep;
+
+
 
 begin
 
-num_extra_keeps <= count_keeps(extra_keep);
-num_input_keeps <= count_keeps(s_keep);
 
-s_ready <= m_ready and not extra_r;
-extra <= '1' when (num_extra_keeps + num_input_keeps > g_axis_words) and s_last = '1' else '0';
-
-dly_data <= num_extra_keeps*g_word_bits; --Number of delayed bits
-direct_data <= g_axis_words*g_word_bits-dly_data; --Number of undelayed bits
-
-dly_keep <= num_extra_keeps;
-direct_keep <= g_axis_words-dly_keep;
-
-debug_dly_data <= to_unsigned(dly_data, 32);
-debug_direct_data <= to_unsigned(direct_data, 32);
-debug_dly_keep <= to_unsigned(dly_keep, 32);
-debug_direct_keep <= to_unsigned(direct_keep, 32);
-
-
-keep <= s_keep(direct_keep-1 downto 0) & extra_keep(dly_keep-1 downto 0) when first = '1' and beat = '1'
-	else s_keep(direct_keep-1 downto 0) & delayed_keep(g_axis_words-1 downto g_axis_words-dly_keep) when beat = '1';
-
-data <= s_data(direct_data-1 downto 0) & extra_data(dly_data-1 downto 0) when first = '1' and beat = '1' 
-	else s_data(direct_data-1 downto 0) & delayed_data(delayed_data'high downto delayed_data'high-dly_data+1) when beat = '1'; 
-
-last_data <= zeros(direct_data-1 downto 0) & delayed_data(delayed_data'high downto direct_data);
-last_keep <= zeros(direct_keep-1 downto 0) & delayed_keep(delayed_keep'high downto direct_keep);
-
-m_keep <= last_keep when extra_r = '1' else keep;
-m_data <= last_data when extra_r = '1' else data;
-m_valid <= s_valid or extra_r;
-m_last <= s_last when extra = '0' and extra_r= '0' else '1' when extra_r = '1' else '0';
-beat <= s_valid and m_ready;
-extra_beat <= extra_r and m_ready; --Internal logic makes su data is valid when extra_r is set
-
+s_data_wv <= word_vector_from_stdlv(s_data, g_axis_words);
+extra_data_wv <= word_vector_from_stdlv(extra_data, g_axis_words);
+beat <= s_valid and s_ready_int;
+s_ready_int <= m_ready when transfer = '1' else '0';
+s_ready <= s_ready_int;
+m_last <= m_last_int;
 
 p_transmit : process(clk)
+	variable word_reg : word_vector;
 begin
 	if rising_edge(clk) then
 		if reset = '1' then
-			extra_r <= '0';
-			delayed_data  <= (others => '0');
-			delayed_keep <= (others => '0');
-			first <= '1';
+			aligner_state <= idle;
+			m_last_int <= '0';
+			--s_ready <= '0';
+			transfer <= '0';
+			m_valid <= '0';
 		else
-			if beat = '1' then
-				delayed_keep <= s_keep;
-				delayed_data <= s_data;
-				first <= '0';
-				if extra = '1' then
-					extra_r <= extra;
-				end if;
-			end if;
+			case(aligner_state) is
+				when idle=>
+					if s_valid = '1' then
+						aligner_state <= first_data;
+						direct_words <= g_axis_words-count_keeps(extra_keep);
+						extra_words <= count_keeps(extra_keep);
+					end if;
 
-			if s_last = '1' then
-				first <= '1';
-			end if;
+				when first_data =>
+					transfer <= '1';
+					if beat = '1' then
+						word_reg := merge_wv(s_data_wv, extra_data_wv, extra_words);
+						delay_reg <= s_data_wv;
+						m_data <= stdlv_from_word_vector(merge_wv(s_data_wv, extra_data_wv, extra_words));
+						m_valid <= '1';
+						m_keep <= merge_keep(s_keep, extra_keep, extra_words);
+						delay_keep <= s_keep;
+						aligner_state <= data;
 
-			if extra_beat = '1' then
-				extra_r <= '0';
-			end if;
+						if s_last = '1' then
+							transfer <= '0';
+							if extra_words+count_keeps(s_keep) > g_axis_words then
+								aligner_state <= transfer_remaining;
+							else
+								transfer <= '0';
+								aligner_state <= last_beat;
+								m_last_int <= '1';
+							end if;
+						end if;
+					end if;
+				
+				when data =>
+					if beat = '1' then
+						word_reg := join_wv(s_data_wv, delay_reg, direct_words);
+						delay_reg <= s_data_wv;
+						m_data <= stdlv_from_word_vector(join_wv(s_data_wv, delay_reg, direct_words));
+						m_valid <= '1';
+						m_keep <= join_keep(s_keep, delay_keep, direct_words);
+						delay_keep <= s_keep;
+						aligner_state <= data;
+						if s_last = '1' then
+							transfer <= '0';
+							if extra_words+count_keeps(s_keep) > g_axis_words then
+								remaining_words <= extra_words+count_keeps(s_keep)-g_axis_words;
+								last_keep <= count_keeps(s_keep);
+								offset <= count_keeps(s_keep)-(extra_words+(count_keeps(s_keep)-g_axis_words));
+								aligner_state <= transfer_remaining;
+							else
+								transfer <= '0';
+								aligner_state <= last_beat;
+								m_last_int <= '1';
+							end if;
+						end if;
+					end if;
+
+				when transfer_remaining =>
+					if m_ready = '1' then
+						word_reg(remaining_words-1 downto 0) := delay_reg(remaining_words-1+offset downto offset);
+						m_data <= stdlv_from_word_vector(word_reg);
+						m_keep <= (others => '0');
+						m_keep(remaining_words-1 downto 0) <= delay_keep(remaining_words-1+offset downto offset);
+						m_valid <= '1';
+						m_last_int <= '1';
+						if m_ready = '1' then
+							transfer <= '0';
+							transfer <= '0';
+							aligner_state <= last_beat;
+							m_last_int <= '1';
+						end if;
+					end if;
+
+
+				when last_beat =>
+					if m_ready = '1' then
+						aligner_state <= idle;
+						m_last_int <= '0';
+						m_valid <= '0';
+					end if;
+			end case;
 		end if;
 	end if;
 end process;

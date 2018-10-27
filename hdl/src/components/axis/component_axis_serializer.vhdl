@@ -9,6 +9,7 @@ entity axis_serializer is
 		clk : in  STD_LOGIC;
 
 		s_in : in std_logic_vector(g_parallell_words*g_word_bits -1 downto 0);
+		s_last : in std_logic;
 		s_valid : in std_logic;
 		s_ready : out std_logic;
 
@@ -22,13 +23,17 @@ entity axis_serializer is
 end axis_serializer;
 
 architecture Behavioral of axis_serializer is
-	type serializer_states is (idle, transmit, last);
+	type serializer_states is (idle, prepare, transmit, last);
 	type word_vector is array (g_parallell_words-1 downto 0) of std_logic_vector(g_word_bits-1 downto 0);
 
 	constant num_axis_words : natural := (g_parallell_words+g_axis_words-1)/g_axis_words;
 
 	signal beat_in : std_logic;
+	signal beat_out : std_logic;
+
+	signal m_valid_int : std_logic;
 	signal s_ready_int : std_logic;
+	signal s_last_int : std_logic;
 	signal words_reg : word_vector;
 	signal serializer_state : serializer_states;
 	signal keep_vector : std_logic_vector(g_parallell_words-1 downto 0);
@@ -51,37 +56,48 @@ architecture Behavioral of axis_serializer is
 		end loop;
 		return o;
 	end function stdlv_from_word_vector;
-
-
-
-
-
 begin
 
-
+m_valid <= m_valid_int;
 s_ready <= s_ready_int;
 beat_in <= '1' when s_ready_int = '1' and s_valid = '1' else '0'; 
+beat_out <= '1' when m_ready ='1' and m_valid_int = '1' else '0'; 
 
 p_transmit : process(clk)
 begin
 	if rising_edge(clk) then
 		if reset = '1' then
 			serializer_state <= idle;
-			m_valid <= '0';
+			m_valid_int <= '0';
 			m_last <= '0';
 		else
 			case(serializer_state) is 
 				when idle =>
 					s_ready_int <= '1';
 					if beat_in = '1' then
+						s_ready_int <= '0';
 						word_cnt <= 0;
 						words_reg <= word_vector_from_stdlv(s_in);
-						serializer_state <= transmit;
+						s_last_int <= s_last;
+						serializer_state <= prepare;
 						keep_vector <= (others => '1');
-					end if;	
+					end if;
+
+				when prepare =>	
+					words_reg(words_reg'high-g_axis_words downto 0)<=
+							words_reg(words_reg'high downto g_axis_words);
+					keep_vector(keep_vector'high-g_axis_words downto 0) <=
+							keep_vector(keep_vector'high downto g_axis_words);
+					keep_vector(keep_vector'high downto keep_vector'high-g_axis_words+1)<=
+							(others => '0');
+					word_cnt <= word_cnt +1;
+					m_data <= stdlv_from_word_vector(words_reg);
+					m_keep <= keep_vector(g_axis_words-1 downto 0);
+					m_valid_int <= '1';
+					serializer_state <= transmit;
 
 				when transmit =>
-					if beat_in = '1' then
+					if beat_out = '1' then
 						words_reg(words_reg'high-g_axis_words downto 0)<=
 								words_reg(words_reg'high downto g_axis_words);
 						keep_vector(keep_vector'high-g_axis_words downto 0) <=
@@ -90,19 +106,19 @@ begin
 								(others => '0');
 						m_data <= stdlv_from_word_vector(words_reg);
 						m_keep <= keep_vector(g_axis_words-1 downto 0);
-						m_valid <= '1';
 
 						word_cnt <= word_cnt +1;
 						if word_cnt = num_axis_words -1 then
-							m_last <= '1';
+							m_last <= s_last_int;
 							serializer_state <= last;
 						end if;
 					end if;
 				when last =>
-					if beat_in = '1' then
+					if beat_out = '1' then
 						serializer_state <= idle;
+						s_ready_int <= '1';
 						m_last <= '0';
-						m_valid <= '0';
+						m_valid_int <= '0';
 					end if;
 
 			end case;
